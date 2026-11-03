@@ -5,7 +5,7 @@
 
 Footnote answers questions about a folder of documents, and every claim in the answer carries a footnote that opens the source at the exact sentence it rests on.
 
-[![CI](https://github.com/emirk35/footnote/actions/workflows/ci.yml/badge.svg)](https://github.com/emirk35/footnote/actions/workflows/ci.yml)
+[![CI](https://github.com/EmirKonur/footnote/actions/workflows/ci.yml/badge.svg)](https://github.com/EmirKonur/footnote/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-E3AA55?style=flat-square&labelColor=0B1428)](LICENSE)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-EEE6D4?style=flat-square&labelColor=0B1428)](api/pyproject.toml)
 [![Next.js 16](https://img.shields.io/badge/next.js-16-EEE6D4?style=flat-square&labelColor=0B1428)](web/package.json)
@@ -34,7 +34,7 @@ You can drop in Markdown, HTML, PDF, or plain-text files (a single file or a fol
 You need Python 3.12 with [uv](https://docs.astral.sh/uv/), Node 23 or later, and pnpm 9.
 
 ```sh
-git clone https://github.com/emirk35/footnote.git && cd footnote
+git clone https://github.com/EmirKonur/footnote.git && cd footnote
 make install        # uv sync + pnpm install, from the lockfiles
 make seed           # ingest 15 Python PEPs (downloads the 64 MB embedding model once)
 make dev            # API on http://localhost:4410, web app on http://localhost:4411
