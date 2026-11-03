@@ -1,0 +1,12 @@
+Loan Policy
+===========
+
+Members may borrow up to six books at once. Reference works stay in the building.
+
+Renewals
+--------
+
+A loan can be renewed twice,
+online or at the desk.
+
+Overdue items accrue no fines, but borrowing is paused until they come back.

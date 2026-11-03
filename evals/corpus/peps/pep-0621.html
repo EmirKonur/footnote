@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PEP 621 – Storing project metadata in pyproject.toml</title>
+<link rel="canonical" href="https://peps.python.org/pep-0621/">
+</head>
+<body>
+<main>
+<section>
+<h1>PEP 621 – Storing project metadata in pyproject.toml</h1>
+<dl>
+<dt>Author:</dt>
+<dd>Brett Cannon &lt;brett at python.org&gt;,
+Dustin Ingram &lt;di at python.org&gt;,
+Paul Ganssle &lt;paul at ganssle.io&gt;,
+Pradyun Gedam &lt;pradyunsg at gmail.com&gt;,
+Sébastien Eustace &lt;sebastien at eustace.io&gt;,
+Thomas Kluyver &lt;thomas at kluyver.me.uk&gt;,
+Tzu-ping Chung &lt;uranusjr at gmail.com&gt;</dd>
+<dt>Discussions-To:</dt>
+<dd><a href="https://discuss.python.org/t/pep-621-round-3/5472">Discourse thread</a></dd>
+<dt>Status:</dt>
+<dd>Final</dd>
+<dt>Type:</dt>
+<dd>Standards Track</dd>
+<dt>Topic:</dt>
+<dd><a href="../topic/packaging/">Packaging</a></dd>
+<dt>Created:</dt>
+<dd>22-Jun-2020</dd>
+<dt>Post-History:</dt>
+<dd>22-Jun-2020,
+18-Oct-2020,
+24-Oct-2020,
+31-Oct-2020</dd>
+<dt>Resolution:</dt>
+<dd><a href="https://discuss.python.org/t/pep-621-round-3/5472/109">Discourse message</a></dd>
+</dl>
+
+<section>
+</section>
+<div>
+
+<p>This PEP is a historical document. The up-to-date, canonical spec, <a href="https://packaging.python.org/en/latest/specifications/pyproject-toml/#pyproject-toml-spec">pyproject.toml specification</a>, is maintained on the <a href="https://packaging.python.org/en/latest/specifications/">PyPA specs page</a>.</p>
+<p>×</p>
+<p>See the <a href="https://www.pypa.io/en/latest/specifications/#handling-fixes-and-other-minor-updates">PyPA specification update process</a> for how to propose changes.</p>
+</div>
+<section>
+<h2><a href="#abstract">Abstract</a></h2>
+<p>This PEP specifies how to write a project’s <a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a> in a
+<code>pyproject.toml</code> file for packaging-related tools to consume.</p>
+</section>
+<section>
+<h2><a href="#motivation">Motivation</a></h2>
+<p>The key motivators of this PEP are:</p>
+<ul>
+<li>Encourage users to specify core metadata statically for speed,
+ease of specification, unambiguity, and deterministic consumption by
+build back-ends</li>
+<li>Provide a tool-agnostic way of specifying metadata for ease of
+learning and transitioning between build back-ends</li>
+<li>Allow for more code sharing between build back-ends for the
+“boring parts” of a project’s metadata</li>
+</ul>
+<p>To speak specifically to the motivation for static metadata, that has
+been an overall goal of the packaging ecosystem for some time. As
+such, making it easy to specify metadata statically is important. This
+also means that raising the cost of specifying data as dynamic is
+acceptable as users should skew towards wanting to provide static
+metadata.</p>
+<p>Requiring the distinction between static and dynamic metadata also
+helps with disambiguation for when metadata isn’t specified. When any
+metadata <em>may</em> be dynamic, it means you never know if the absence of
+metadata is on purpose or because it is to be provided later. By
+requiring that dynamic metadata be specified, it disambiguates the
+intent when metadata goes unspecified.</p>
+<p>This PEP does <strong>not</strong> attempt to standardize all possible metadata
+required by a build back-end, only the metadata covered by the
+<a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a> specification which are very common across projects
+and would stand to benefit from being static and consistently
+specified. This means build back-ends are still free and able to
+innovate around patterns like how to specify the files to include in a
+wheel. There is also an included escape hatch for users and build
+back-ends to use when they choose to partially opt-out of this PEP
+(compared to opting-out of this PEP entirely, which is also possible).</p>
+<p>This PEP is also not trying to change the underlying <a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a>
+in any way. Such considerations should be done in a separate PEP which
+may lead to changes or additions to what this PEP specifies.</p>
+</section>
+<section>
+<h2><a href="#rationale">Rationale</a></h2>
+<p>The design guidelines the authors of this PEP followed were:</p>
+<ul>
+<li>Define a representation of as much of the <a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a> in
+<code>pyproject.toml</code> as is reasonable</li>
+<li>Define the metadata statically with an escape hatch for those who
+want to define it dynamically later via a build back-end</li>
+<li>Use familiar names where it makes sense, but be willing to use more
+modern terminology</li>
+<li>Try to be ergonomic within a TOML file instead of mirroring how
+build back-ends specify metadata at a low-level when it makes sense</li>
+<li>Learn from other build back-ends in the packaging ecosystem which
+have used TOML for their metadata</li>
+<li>Don’t try to standardize things which lack a pre-existing standard
+at a lower-level</li>
+<li><em>When</em> metadata is specified using this PEP, it is considered
+canonical</li>
+</ul>
+</section>
+<section>
+<h2><a href="#specification">Specification</a></h2>
+<p>When specifying project metadata, tools MUST adhere and honour the
+metadata as specified in this PEP. If metadata is improperly specified
+then tools MUST raise an error to notify the user about their mistake.</p>
+<p>Data specified using this PEP is considered canonical. Tools CANNOT
+remove, add or change data that has been statically specified. Only
+when a field is marked as <code>dynamic</code> may a tool provide a “new” value.</p>
+<section>
+<h3><a href="#details">Details</a></h3>
+<section>
+<h4><a href="#table-name">Table name</a></h4>
+<p>Tools MUST specify fields defined by this PEP in a table named
+<code>[project]</code>. No tools may add fields to this table which are not
+defined by this PEP or subsequent PEPs. For tools wishing to store
+their own settings in <code>pyproject.toml</code>, they may use the <code>[tool]</code>
+table as defined in <a href="../pep-0518/">PEP 518</a>. The lack of a <code>[project]</code> table
+implicitly means the build back-end will dynamically provide all
+fields.</p>
+</section>
+<section>
+<h4><a href="#name"><code>name</code></a></h4>
+<ul>
+<li>Format: string</li>
+<li><a href="https://packaging.python.org/specifications/core-metadata/">Core metadata</a>: <code>Name</code>
+(<a href="https://packaging.python.org/specifications/core-metadata/#name">link</a>)</li>
+<li>Synonyms<ul>
+<li><a href="https://flit.readthedocs.io/">Flit</a>: <code>module</code>/<code>dist-name</code>
+(<a href="https://flit.readthedocs.io/en/latest/pyproject_toml.html#metadata-section">link</a>)</li>
+<li><a href="https://python-poetry.org/">Poetry</a>: <code>name</code>
+(<a href="https://python-poetry.org/docs/pyproject/#name">link</a>)</li>
+<li><a href="https://setuptools.readthedocs.io/">Setuptools</a>: <code>name</code>
+(<a href="https://setuptools.readthedocs.io/en/latest/setuptools.html#metadata">link</a>)</li>
+</ul>
+</li>
+</ul>
+<p>The name of the project.</p>
+<p>Tools MUST require users to statically define this field.</p>
+<p>Tools SHOULD normalize this name, as specified by <a href="../pep-0503/">PEP 503</a>, as soon
+as it is read for internal consistency.</p>
+</section>
+<section>
+<h4><a href="#version"><code>version</code></a></h4>
+<ul>
+<li>Format: string</li>
+<li><a href="https://packaging.python.org/specifications/core-metadata/">Core metadata</a>: <code>Version</code>
+(<a href="https://packaging.python.org/specifications/core-metadata/#version">link</a>)</li>
+<li>Synonyms<ul>
+<li><a href="https://flit.readthedocs.io/">Flit</a>: N/A (read from a <code>__version__</code> attribute)
+(<a href="https://flit.readthedocs.io/en/latest/index.html#usage">link</a>)</li>
+<li><a href="https://python-poetry.org/">Poetry</a>: <code>version</code>
+(<a href="https://python-poetry.org/docs/pyproject/#version">link</a>)</li>
+<li><a href="https://setuptools.readthedocs.io/">Setuptools</a>: <code>version</code>
+(<a href="https://setuptools.readthedocs.io/en/latest/setuptools.html#metadata">link</a>)</li>
+</ul>
+</li>
+</ul>
+<p>The version of the project as supported by <a href="../pep-0440/">PEP 440</a>.</p>
+<p>Users SHOULD prefer to specify already-normalized versions.</p>
+</section>
+<section>
+<h4><a href="#description"><code>description</code></a></h4>
+<ul>
+<li>Format: string</li>
+<li><a href="https://packaging.python.org/specifications/core-metadata/">Core metadata</a>: <code>Summary</code>
+(<a href="https://packaging.python.org/specifications/core-metadata/#summary">link</a>)</li>
+<li>Synonyms<ul>
+<li><a href="https://flit.readthedocs.io/">Flit</a>: N/A</li>
+<li><a href="https://python-poetry.org/">Poetry</a>: <code>description</code>
+(<a href="https://python-poetry.org/docs/pyproject/#description">link</a>)</li>
+<li><a href="https://setuptools.readthedocs.io/">Setuptools</a>: <code>description</code>
+(<a href="https://setuptools.readthedocs.io/en/latest/setuptools.html#metadata">link</a>)</li>
+</ul>
+</li>
+</ul>
+<p>The summary description of the project.</p>
+</section>
+<section>
+<h4><a href="#readme"><code>readme</code></a></h4>
+<ul>
+<li>Format: String or table</li>
+<li><a href="https://packaging.python.org/specifications/core-metadata/">Core metadata</a>: <code>Description</code>
+(<a href="https://packaging.python.org/specifications/core-metadata/#description">link</a>)</li>
+<li>Synonyms<ul>
+<li><a href="https://flit.readthedocs.io/">Flit</a>: <code>description-file</code>
+(<a href="https://flit.readthedocs.io/en/latest/pyproject_toml.html#metadata-section">link</a>)</li>
+<li><a href="https://python-poetry.org/">Poetry</a>: <code>readme</code>
+(<a href="https://python-poetry.org/docs/pyproject/#readme">link</a>)</li>
+<li><a href="https://setuptools.readthedocs.io/">Setuptools</a>: <code>long_description</code>
+(<a href="https://setuptools.readthedocs.io/en/latest/setuptools.html#metadata">link</a>)</li>
+</ul>
+</li>
+</ul>
+<p>The full description of the project (i.e. the README).</p>
+<p>The field accepts either a string or a table. If it is a string then
+it is the relative path to a text file containing the full
+description. Tools MUST assume the file’s encoding is UTF-8. If the
+file path ends in a case-insensitive <code>.md</code> suffix, then tools MUST
+assume the content-type is <code>text/markdown</code>. If the file path ends in
+a case-insensitive <code>.rst</code>, then tools MUST assume the content-type
+is <code>text/x-rst</code>. If a tool recognizes more extensions than this PEP,
+they MAY infer the content-type for the user without specifying this
+field as <code>dynamic</code>. For all unrecognized suffixes when a
+content-type is not provided, tools MUST raise an error.</p>
+<p>The <code>readme</code> field may also take a table. The <code>file</code> key has a
+string value representing a relative path to a file containing the
+full description. The <code>text</code> key has a string value which is the
+full description. These keys are mutually-exclusive, thus tools MUST
+raise an error if the metadata specifies both keys.</p>
+<p>A table specified in the <code>readme</code> field also has a <code>content-type</code>
+field which takes a string specifying the content-type of the full
+description. A tool MUST raise an error if the metadata does not
+specify this field in the table. If the metadata does not specify the
+<code>charset</code> parameter, then it is assumed to be UTF-8. Tools MAY
+support other encodings if they choose to. Tools MAY support
+alternative content-types which they can transform to a content-type
+as supported by the <a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a>. Otherwise tools MUST raise an
+error for unsupported content-types.</p>
+</section>
+<section>
+<h4><a href="#requires-python"><code>requires-python</code></a></h4>
+<ul>
+<li>Format: string</li>
+<li><a href="https://packaging.python.org/specifications/core-metadata/">Core metadata</a>: <code>Requires-Python</code>
+(<a href="https://packaging.python.org/specifications/core-metadata/#requires-python">link</a>)</li>
+<li>Synonyms<ul>
+<li><a href="https://flit.readthedocs.io/">Flit</a>: <code>requires-python</code>
+(<a href="https://flit.readthedocs.io/en/latest/pyproject_toml.html#metadata-section">link</a>)</li>
+<li><a href="https://python-poetry.org/">Poetry</a>: As a <code>python</code> dependency in the
+<code>[tool.poetry.dependencies]</code> table
+(<a href="https://python-poetry.org/docs/pyproject/#dependencies-and-dev-dependencies">link</a>)</li>
+<li><a href="https://setuptools.readthedocs.io/">Setuptools</a>: <code>python_requires</code>
+(<a href="https://setuptools.readthedocs.io/en/latest/setuptools.html#metadata">link</a>)</li>
+</ul>
+</li>
+</ul>
+<p>The Python version requirements of the project.</p>
+</section>
+<section>
+<h4><a href="#license"><code>license</code></a></h4>
+<ul>
+<li>Format: Table</li>
+<li><a href="https://packaging.python.org/specifications/core-metadata/">Core metadata</a>: <code>License</code>
+(<a href="https://packaging.python.org/specifications/core-metadata/#license">link</a>)</li>
+<li>Synonyms<ul>
+<li><a href="https://flit.readthedocs.io/">Flit</a>: <code>license</code>
+(<a href="https://flit.readthedocs.io/en/latest/pyproject_toml.html#metadata-section">link</a>)</li>
+<li><a href="https://python-poetry.org/">Poetry</a>: <code>license</code>
+(<a href="https://python-poetry.org/docs/pyproject/#license">link</a>)</li>
+<li><a href="https://setuptools.readthedocs.io/">Setuptools</a>: <code>license</code>, <code>license_file</code>, <code>license_files</code>
+(<a href="https://setuptools.readthedocs.io/en/latest/setuptools.html#metadata">link</a>)</li>
+</ul>
+</li>
+</ul>
+<p>The table may have one of two keys. The <code>file</code> key has a string
+value that is a relative file path to the file which contains the
+license for the project. Tools MUST assume the file’s encoding is
+UTF-8. The <code>text</code> key has a string value which is the license of the
+project whose meaning is that of the <code>License</code> field from the
+<a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a>. These keys are mutually exclusive, so a tool MUST
+raise an error if the metadata specifies both keys.</p>
+<p>A practical string value for the <code>license</code> key has been purposefully
+left out to allow for a future PEP to specify support for <a href="https://spdx.dev/">SPDX</a>
+expressions (the same logic applies to any sort of “type” field
+specifying what license the <code>file</code> or <code>text</code> represents).</p>
+</section>
+<section>
+<h4><a href="#authors-maintainers"><code>authors</code>/<code>maintainers</code></a></h4>
+<ul>
+<li>Format: Array of inline tables with string keys and values</li>
+<li><a href="https://packaging.python.org/specifications/core-metadata/">Core metadata</a>: <code>Author</code>/<code>Author-email</code>/<code>Maintainer</code>/<code>Maintainer-email</code>
+(<a href="https://packaging.python.org/specifications/core-metadata/#author">link</a>)</li>
+<li>Synonyms<ul>
+<li><a href="https://flit.readthedocs.io/">Flit</a>: <code>author</code>/<code>author-email</code>/<code>maintainer</code>/<code>maintainer-email</code>
+(<a href="https://flit.readthedocs.io/en/latest/pyproject_toml.html#metadata-section">link</a>)</li>
+<li><a href="https://python-poetry.org/">Poetry</a>: <code>authors</code>/<code>maintainers</code>
+(<a href="https://python-poetry.org/docs/pyproject/#authors">link</a>)</li>
+<li><a href="https://setuptools.readthedocs.io/">Setuptools</a>: <code>author</code>/<code>author_email</code>/<code>maintainer</code>/<code>maintainer_email</code>
+(<a href="https://setuptools.readthedocs.io/en/latest/setuptools.html#metadata">link</a>)</li>
+</ul>
+</li>
+</ul>
+<p>The people or organizations considered to be the “authors” of the
+project. The exact meaning is open to interpretation — it may list the
+original or primary authors, current maintainers, or owners of the
+package.</p>
+<p>The “maintainers” field is similar to “authors” in that its exact
+meaning is open to interpretation.</p>
+<p>These fields accept an array of tables with 2 keys: <code>name</code> and
+<code>email</code>. Both values must be strings. The <code>name</code> value MUST be a
+valid email name (i.e. whatever can be put as a name, before an email,
+in <span></span><a href="https://datatracker.ietf.org/doc/html/rfc822.html"><strong>RFC 822</strong></a>) and not contain commas. The <code>email</code> value MUST be a
+valid email address. Both keys are optional.</p>
+<p>Using the data to fill in <a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a> is as follows:</p>
+<ol>
+<li>If only <code>name</code> is provided, the value goes in
+<code>Author</code>/<code>Maintainer</code> as appropriate.</li>
+<li>If only <code>email</code> is provided, the value goes in
+<code>Author-email</code>/<code>Maintainer-email</code> as appropriate.</li>
+<li>If both <code>email</code> and <code>name</code> are provided, the value goes in
+<code>Author-email</code>/<code>Maintainer-email</code> as appropriate, with the
+format <code>{name} &lt;{email}&gt;</code> (with appropriate quoting, e.g. using
+<code>email.headerregistry.Address</code>).</li>
+<li>Multiple values should be separated by commas.</li>
+</ol>
+</section>
+<section>
+<h4><a href="#keywords"><code>keywords</code></a></h4>
+<ul>
+<li>Format: array of strings</li>
+<li><a href="https://packaging.python.org/specifications/core-metadata/">Core metadata</a>: <code>Keywords</code>
+(<a href="https://packaging.python.org/specifications/core-metadata/#keywords">link</a>)</li>
+<li>Synonyms<ul>
+<li><a href="https://flit.readthedocs.io/">Flit</a>: <code>keywords</code>
+(<a href="https://flit.readthedocs.io/en/latest/pyproject_toml.html#metadata-section">link</a>)</li>
+<li><a href="https://python-poetry.org/">Poetry</a>: <code>keywords</code>
+(<a href="https://python-poetry.org/docs/pyproject/#keywords">link</a>)</li>
+<li><a href="https://setuptools.readthedocs.io/">Setuptools</a>: <code>keywords</code>
+(<a href="https://setuptools.readthedocs.io/en/latest/setuptools.html#metadata">link</a>)</li>
+</ul>
+</li>
+</ul>
+<p>The keywords for the project.</p>
+</section>
+<section>
+<h4><a href="#classifiers"><code>classifiers</code></a></h4>
+<ul>
+<li>Format: array of strings</li>
+<li><a href="https://packaging.python.org/specifications/core-metadata/">Core metadata</a>: <code>Classifier</code>
+(<a href="https://packaging.python.org/specifications/core-metadata/#classifier-multiple-use">link</a>)</li>
+<li>Synonyms<ul>
+<li><a href="https://flit.readthedocs.io/">Flit</a>: <code>classifiers</code>
+(<a href="https://flit.readthedocs.io/en/latest/pyproject_toml.html#metadata-section">link</a>)</li>
+<li><a href="https://python-poetry.org/">Poetry</a>: <code>classifiers</code>
+(<a href="https://python-poetry.org/docs/pyproject/#classifiers">link</a>)</li>
+<li><a href="https://setuptools.readthedocs.io/">Setuptools</a>: <code>classifiers</code>
+(<a href="https://setuptools.readthedocs.io/en/latest/setuptools.html#metadata">link</a>)</li>
+</ul>
+</li>
+</ul>
+<p><a href="https://pypi.org/classifiers/">Trove classifiers</a> which apply to the project.</p>
+</section>
+<section>
+<h4><a href="#urls"><code>urls</code></a></h4>
+<ul>
+<li>Format: Table, with keys and values of strings</li>
+<li><a href="https://packaging.python.org/specifications/core-metadata/">Core metadata</a>: <code>Project-URL</code>
+(<a href="https://packaging.python.org/specifications/core-metadata/#project-url-multiple-use">link</a>)</li>
+<li>Synonyms<ul>
+<li><a href="https://flit.readthedocs.io/">Flit</a>: <code>[tool.flit.metadata.urls]</code> table
+(<a href="https://flit.readthedocs.io/en/latest/pyproject_toml.html#metadata-section">link</a>)</li>
+<li><a href="https://python-poetry.org/">Poetry</a>: <code>[tool.poetry.urls]</code> table
+(<a href="https://python-poetry.org/docs/pyproject/#urls">link</a>)</li>
+<li><a href="https://setuptools.readthedocs.io/">Setuptools</a>: <code>project_urls</code>
+(<a href="https://setuptools.readthedocs.io/en/latest/setuptools.html#metadata">link</a>)</li>
+</ul>
+</li>
+</ul>
+<p>A table of URLs where the key is the URL label and the value is the
+URL itself.</p>
+</section>
+<section>
+<h4><a href="#entry-points">Entry points</a></h4>
+<ul>
+<li>Format: Table (<code>[project.scripts]</code>, <code>[project.gui-scripts]</code>, and
+<code>[project.entry-points]</code>)</li>
+<li><a href="https://packaging.python.org/specifications/core-metadata/">Core metadata</a>: N/A;
+<a href="https://packaging.python.org/specifications/entry-points/">Entry points specification</a></li>
+<li>Synonyms<ul>
+<li><a href="https://flit.readthedocs.io/">Flit</a>: <code>[tool.flit.scripts]</code> table for console scripts,
+<code>[tool.flit.entrypoints]</code> for the rest
+(<a href="https://flit.readthedocs.io/en/latest/pyproject_toml.html#scripts-section">link</a>)</li>
+<li><a href="https://python-poetry.org/">Poetry</a>: <code>[tool.poetry.scripts]</code> table for console scripts
+(<a href="https://python-poetry.org/docs/pyproject/#scripts">link</a>)</li>
+<li><a href="https://setuptools.readthedocs.io/">Setuptools</a>: <code>entry_points</code>
+(<a href="https://setuptools.readthedocs.io/en/latest/setuptools.html#metadata">link</a>)</li>
+</ul>
+</li>
+</ul>
+<p>There are three tables related to entry points. The
+<code>[project.scripts]</code> table corresponds to the <code>console_scripts</code>
+group in the <a href="https://packaging.python.org/specifications/entry-points/">entry points specification</a>. The key of the table is the name of the
+entry point and the value is the object reference.</p>
+<p>The <code>[project.gui-scripts]</code> table corresponds to the <code>gui_scripts</code>
+group in the <a href="https://packaging.python.org/specifications/entry-points/">entry points specification</a>. Its format is the same as
+<code>[project.scripts]</code>.</p>
+<p>The <code>[project.entry-points]</code> table is a collection of tables. Each
+sub-table’s name is an entry point group. The key and value semantics
+are the same as <code>[project.scripts]</code>. Users MUST NOT create
+nested sub-tables but instead keep the entry point groups to only one
+level deep.</p>
+<p>Build back-ends MUST raise an error if the metadata defines a
+<code>[project.entry-points.console_scripts]</code> or
+<code>[project.entry-points.gui_scripts]</code> table, as they would
+be ambiguous in the face of <code>[project.scripts]</code> and
+<code>[project.gui-scripts]</code>, respectively.</p>
+</section>
+<section>
+<h4><a href="#dependencies-optional-dependencies"><code>dependencies</code>/<code>optional-dependencies</code></a></h4>
+<ul>
+<li>Format: Array of <a href="../pep-0508/">PEP 508</a> strings (<code>dependencies</code>) and a table
+with values of arrays of <a href="../pep-0508/">PEP 508</a> strings
+(<code>optional-dependencies</code>)</li>
+<li><a href="https://packaging.python.org/specifications/core-metadata/">Core metadata</a>: <code>Requires-Dist</code> and <code>Provides-Extra</code>
+(<a href="https://packaging.python.org/specifications/core-metadata/#requires-dist-multiple-use">link</a>,
+<a href="https://packaging.python.org/specifications/core-metadata/#provides-extra-multiple-use">link</a>)</li>
+<li>Synonyms<ul>
+<li><a href="https://flit.readthedocs.io/">Flit</a>: <code>requires</code> for required dependencies, <code>requires-extra</code>
+for optional dependencies
+(<a href="https://flit.readthedocs.io/en/latest/pyproject_toml.html#metadata-section">link</a>)</li>
+<li><a href="https://python-poetry.org/">Poetry</a>: <code>[tool.poetry.dependencies]</code> for dependencies (both
+required and for development),
+<code>[tool.poetry.extras]</code> for optional dependencies
+(<a href="https://python-poetry.org/docs/pyproject/#dependencies-and-dev-dependencies">link</a>)</li>
+<li><a href="https://setuptools.readthedocs.io/">Setuptools</a>: <code>install_requires</code> for required dependencies,
+<code>extras_require</code> for optional dependencies
+(<a href="https://setuptools.readthedocs.io/en/latest/setuptools.html#metadata">link</a>)</li>
+</ul>
+</li>
+</ul>
+<p>The (optional) dependencies of the project.</p>
+<p>For <code>dependencies</code>, it is a key whose value is an array of strings.
+Each string represents a dependency of the project and MUST be
+formatted as a valid <a href="../pep-0508/">PEP 508</a> string. Each string maps directly to
+a <code>Requires-Dist</code> entry in the <a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a>.</p>
+<p>For <code>optional-dependencies</code>, it is a table where each key specifies
+an extra and whose value is an array of strings. The strings of the
+arrays must be valid <a href="../pep-0508/">PEP 508</a> strings. The keys MUST be valid values
+for the <code>Provides-Extra</code> <a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a>. Each value in the array
+thus becomes a corresponding <code>Requires-Dist</code> entry for the matching
+<code>Provides-Extra</code> metadata.</p>
+</section>
+<section>
+<h4><a href="#dynamic"><code>dynamic</code></a></h4>
+<ul>
+<li>Format: Array of strings</li>
+<li><a href="https://packaging.python.org/specifications/core-metadata/">Core metadata</a>: N/A</li>
+<li>No synonyms</li>
+</ul>
+<p>Specifies which fields listed by this PEP were intentionally
+unspecified so another tool can/will provide such metadata
+dynamically. This clearly delineates which metadata is purposefully
+unspecified and expected to stay unspecified compared to being
+provided via tooling later on.</p>
+<ul>
+<li>A build back-end MUST honour statically-specified metadata (which
+means the metadata did not list the field in <code>dynamic</code>).</li>
+<li>A build back-end MUST raise an error if the metadata specifies the
+<code>name</code> in <code>dynamic</code>.</li>
+<li>If the <a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a> specification lists a field as “Required”,
+then the metadata MUST specify the field statically or list it in
+<code>dynamic</code> (build back-ends MUST raise an error otherwise, i.e. it
+should not be possible for a required field to not be listed somehow
+in the <code>[project]</code> table).</li>
+<li>If the <a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a> specification lists a field as “Optional”,
+the metadata MAY list it in <code>dynamic</code> if the expectation is a
+build back-end will provide the data for the field later.</li>
+<li>Build back-ends MUST raise an error if the metadata specifies a
+field statically as well as being listed in <code>dynamic</code>.</li>
+<li>If the metadata does not list a field in <code>dynamic</code>, then a build
+back-end CANNOT fill in the requisite metadata on behalf of the user
+(i.e. <code>dynamic</code> is the only way to allow a tool to fill in
+metadata and the user must opt into the filling in).</li>
+<li>Build back-ends MUST raise an error if the metadata specifies a
+field in dynamic but the build back-end was unable to provide the
+data for it.</li>
+</ul>
+</section>
+</section>
+<section>
+<h3><a href="#example">Example</a></h3>
+<div><div><pre><span></span>[project]
+name = "spam"
+version = "2020.0.0"
+description = "Lovely Spam! Wonderful Spam!"
+readme = "README.rst"
+requires-python = "&gt;=3.8"
+license = {file = "LICENSE.txt"}
+keywords = ["egg", "bacon", "sausage", "tomatoes", "Lobster Thermidor"]
+authors = [
+  {email = "hi@pradyunsg.me"},
+  {name = "Tzu-ping Chung"}
+]
+maintainers = [
+  {name = "Brett Cannon", email = "brett@python.org"}
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python"
+]
+
+dependencies = [
+  "httpx",
+  "gidgethub[httpx]&gt;4.0.0",
+  "django&gt;2.1; os_name != 'nt'",
+  "django&gt;2.0; os_name == 'nt'"
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest &lt; 5.0.0",
+  "pytest-cov[all]"
+]
+
+[project.urls]
+homepage = "https://example.com"
+documentation = "https://readthedocs.org"
+repository = "https://github.com"
+changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"
+
+[project.scripts]
+spam-cli = "spam:main_cli"
+
+[project.gui-scripts]
+spam-gui = "spam:main_gui"
+
+[project.entry-points."spam.magical"]
+tomatoes = "spam:main_tomatoes"
+</pre></div>
+</div>
+</section>
+</section>
+<section>
+<h2><a href="#backwards-compatibility">Backwards Compatibility</a></h2>
+<p>As this provides a new way to specify a project’s <a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a> and
+is using a new table name which falls under the reserved namespace as
+outlined in <a href="../pep-0518/">PEP 518</a>, there are no backwards-compatibility concerns.</p>
+</section>
+<section>
+<h2><a href="#security-implications">Security Implications</a></h2>
+<p>There are no direct security concerns as this PEP covers how to
+statically define project metadata. Any security issues would stem
+from how tools consume the metadata and choose to act upon it.</p>
+</section>
+<section>
+<h2><a href="#reference-implementation">Reference Implementation</a></h2>
+<p>There are currently no proofs-of-concept from any build back-end
+implementing this PEP.</p>
+</section>
+<section>
+<h2><a href="#rejected-ideas">Rejected Ideas</a></h2>
+<section>
+<h3><a href="#other-table-names">Other table names</a></h3>
+<section>
+<h4><a href="#anything-under-build-system">Anything under <code>[build-system]</code></a></h4>
+<p>There was worry that using this table name would exacerbate confusion
+between build metadata and project metadata, e.g. by using
+<code>[build-system.metadata]</code> as a table.</p>
+</section>
+<section>
+<h4><a href="#package"><code>[package]</code></a></h4>
+<p>Garnered no strong support.</p>
+</section>
+<section>
+<h4><a href="#metadata"><code>[metadata]</code></a></h4>
+<p>The strongest contender after <code>[project]</code>, but in the end it was
+agreed that <code>[project]</code> read better for certain sub-tables, e.g.
+<code>[project.urls]</code>.</p>
+</section>
+</section>
+<section>
+<h3><a href="#support-for-a-metadata-provider">Support for a metadata provider</a></h3>
+<p>Initially there was a proposal to add a middle layer between the
+static metadata specified by this PEP and
+<code>prepare_metadata_for_build_wheel()</code> as specified by <a href="../pep-0517/">PEP 517</a>. The
+idea was that if a project wanted to insert itself between a build
+back-end and the metadata there would be a hook to do so.</p>
+<p>In the end the authors considered this idea unnecessarily complicated
+and would move the PEP away from its design goal to push people to
+define core metadata statically as much as possible.</p>
+</section>
+<section>
+<h3><a href="#require-a-normalized-project-name">Require a normalized project name</a></h3>
+<p>While it would make things easier for tools to only work with the
+normalized name as specified in <a href="../pep-0503/">PEP 503</a>, the idea was ultimately
+rejected as it would hurt projects transitioning to using this PEP.</p>
+</section>
+<section>
+<h3><a href="#specify-files-to-include-when-building">Specify files to include when building</a></h3>
+<p>The authors decided fairly quickly during design discussions that
+this PEP should focus exclusively on project metadata and not build
+metadata. As such, specifying what files should end up in a source
+distribution or wheel file is out of scope for this PEP.</p>
+</section>
+<section>
+<h3><a href="#name-the-project-urls-table-project-project-urls">Name the <code>[project.urls]</code> table <code>[project.project-urls]</code></a></h3>
+<p>This suggestion came thanks to the corresponding <a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a>
+being <code>Project-Url</code>. But once the overall table name of <code>[project]</code>
+was chosen, the redundant use of the word “project” suggested the
+current, shorter name was a better fit.</p>
+</section>
+<section>
+<h3><a href="#have-a-separate-url-home-page-field">Have a separate <code>url</code>/<code>home-page</code> field</a></h3>
+<p>While the <a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a> supports it, having a single field for a
+project’s URL while also supporting a full table seemed redundant and
+confusing.</p>
+</section>
+<section>
+<h3><a href="#recommend-that-tools-put-development-related-dependencies-into-a-dev-extra">Recommend that tools put development-related dependencies into a “dev” extra</a></h3>
+<p>As various tools have grown the concept of required dependencies
+versus development dependencies, the idea of suggesting to tools that
+they put such development tool into a “dev” grouping came up. In the
+end, though, the authors deemed it out-of-scope for this specification
+to suggest such a workflow.</p>
+</section>
+<section>
+<h3><a href="#have-the-dynamic-field-only-require-specifying-missing-required-fields">Have the <code>dynamic</code> field only require specifying missing required fields</a></h3>
+<p>The authors considered the idea that the <code>dynamic</code> field would only
+require the listing of missing required fields and make listing
+optional fields optional. In the end, though, this went against the
+design goal of promoting specifying as much information statically as
+possible.</p>
+</section>
+<section>
+<h3><a href="#different-structures-for-the-readme-field">Different structures for the <code>readme</code> field</a></h3>
+<p>The <code>readme</code> field had a proposed <code>readme_content_type</code> field, but
+the authors considered the string/table hybrid more practical for the
+common case while still accommodating the more complex case. Same goes
+for using <code>long_description</code> and a corresponding
+<code>long_description_content_type</code> field.</p>
+<p>The <code>file</code> key in the table format was originally proposed as
+<code>path</code>, but <code>file</code> corresponds to setuptools’ <code>file</code> key and
+there is no strong reason otherwise to choose one over the other.</p>
+</section>
+<section>
+<h3><a href="#allowing-the-readme-field-to-imply-text-plain">Allowing the <code>readme</code> field to imply <code>text/plain</code></a></h3>
+<p>The authors considered allowing for unspecified content-types which
+would default to <code>text/plain</code>, but decided that it would be best to
+be explicit in this case to prevent accidental incorrect renderings on
+PyPI and to force users to be clear in their intent.</p>
+</section>
+<section>
+<h3><a href="#other-names-for-dependencies-optional-dependencies">Other names for <code>dependencies</code>/<code>optional-dependencies</code></a></h3>
+<p>The authors originally proposed <code>requires</code>/<code>extra-requires</code> as
+names, but decided to go with the current names after a survey of
+other packaging ecosystems showed Python was an outlier:</p>
+<ol>
+<li><a href="https://docs.npmjs.com/files/package.json#optionaldependencies">npm</a></li>
+<li><a href="https://doc.rust-lang.org/cargo/guide/dependencies.html">Rust</a></li>
+<li><a href="https://dart.dev/guides/packages">Dart</a></li>
+<li><a href="https://swift.org/package-manager/">Swift</a></li>
+<li><a href="https://guides.rubygems.org/specification-reference/#add_runtime_dependency">Ruby</a></li>
+</ol>
+<p>Normalizing on the current names helps minimize confusion for people coming from
+other ecosystems without using terminology that is necessarily foreign to new
+programmers. It also prevents potential confusion with <code>requires</code> in the
+<code>[build-system]</code> table as specified in <a href="../pep-0518/">PEP 518</a>.</p>
+</section>
+<section>
+<h3><a href="#drop-maintainers-to-unify-with-authors">Drop <code>maintainers</code> to unify with <code>authors</code></a></h3>
+<p>As the difference between <code>Authors</code> and <code>Maintainers</code> fields in
+the <a href="https://packaging.python.org/specifications/core-metadata/">core metadata</a> is unspecified and ambiguous, this PEP originally
+proposed unifying them as a single <code>authors</code> field. Other ecosystems
+have selected “author” as the term to use, so the thinking was to
+standardize on <code>Author</code> in the core metadata as the place to list
+people maintaining a project.</p>
+<p>In the end, though, the decision to adhere to the core metadata was
+deemed more important to help with the acceptance of this PEP,
+rather than trying to introduce a new interpretation for some of the
+core metadata.</p>
+</section>
+<section>
+<h3><a href="#support-an-arbitrary-depth-of-tables-for-project-entry-points">Support an arbitrary depth of tables for <code>project.entry-points</code></a></h3>
+<p>There was a worry that keeping <code>project.entry-points</code> to a depth of 1 for sub-tables
+would cause confusion to users if they use a dotted name and are not used to table
+names using quotation marks (e.g. <code>project.entry-points."spam.magical"</code>). But
+supporting an arbitrary depth – e.g. <code>project.entry-points.spam.magical</code> – would
+preclude any form of an exploded table format in the future. It would also complicate
+things for build back-ends as they would have to make sure to traverse the full
+table structure rather than a single level and raising errors as appropriate on
+value types.</p>
+</section>
+<section>
+<h3><a href="#using-structured-toml-dictionaries-to-specify-dependencies">Using structured TOML dictionaries to specify dependencies</a></h3>
+<p>The format for specifying the dependencies of a project was the most
+hotly contested topic in terms of data format. It led to the creation
+of both <a href="../pep-0631/">PEP 631</a> and <a href="../pep-0633/">PEP 633</a> which represent what is in this PEP
+and using TOML dictionaries more extensively, respectively. The
+decision on those PEPs can be found at
+<a href="https://discuss.python.org/t/how-to-specify-dependencies-pep-508-strings-or-a-table-in-toml/5243/38">https://discuss.python.org/t/how-to-specify-dependencies-pep-508-strings-or-a-table-in-toml/5243/38</a>.</p>
+<p>The authors briefly considered supporting both formats, but decided
+that it would lead to confusion as people would need to be familiar
+with two formats instead of just one.</p>
+</section>
+<section>
+<h3><a href="#require-build-back-ends-to-update-pyproject-toml-when-generating-an-sdist">Require build back-ends to update <code>pyproject.toml</code> when generating an sdist</a></h3>
+<p>When this PEP was written, sdists did not require having static,
+canonical metadata like this PEP does. The idea was then considered to
+use this PEP as a way to get such metadata into sdists. In the end,
+though, the idea of updating <code>pyproject.toml</code> was not generally
+liked, and so the idea was rejected in favour of separately pursuing
+standardizing metadata in sdists.</p>
+</section>
+<section>
+<h3><a href="#allow-tools-to-add-extend-data">Allow tools to add/extend data</a></h3>
+<p>In an earlier version of this PEP, tools were allowed to extend data
+for fields. For instance, build back-ends could take the version
+number and add a local version for when they built the wheel. Tools
+could also add more trove classifiers for things like the license or
+supported Python versions.</p>
+<p>In the end, though, it was thought better to start out stricter and
+contemplate loosening how static the data could be considered based
+on real-world usage.</p>
+</section>
+</section>
+<section>
+<h2><a href="#open-issues">Open Issues</a></h2>
+<p>None at the moment.</p>
+</section>
+<section>
+<h2><a href="#copyright">Copyright</a></h2>
+<p>This document is placed in the public domain or under the
+CC0-1.0-Universal license, whichever is more permissive.</p>
+</section>
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,33 @@
+# The whole stack: `docker compose up --build`, then open http://localhost:4411.
+# Add ANTHROPIC_API_KEY to .env for cited answers; without it the app is retrieval-only.
+services:
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    ports:
+      - "4410:4410"
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      FOOTNOTE_MODEL: ${FOOTNOTE_MODEL:-claude-opus-5-5}
+      FOOTNOTE_EFFORT: ${FOOTNOTE_EFFORT:-medium}
+      FOOTNOTE_FAKE_LLM: ${FOOTNOTE_FAKE_LLM:-off}
+      FOOTNOTE_CORS_ORIGINS: '["http://localhost:4411","http://127.0.0.1:4411"]'
+    volumes:
+      - footnote-data:/data
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    ports:
+      - "4411:4411"
+    environment:
+      # Read by the browser, so it is the address of the API as seen from the host.
+      FOOTNOTE_API_URL: ${FOOTNOTE_API_URL:-http://localhost:4410}
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  footnote-data:

@@ -1,0 +1,20 @@
+name: Feature request
+description: Suggest a change to retrieval, citations, the evals, or the UI.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and where does Footnote get in the way?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you'd like instead
+  - type: textarea
+    id: measure
+    attributes:
+      label: How we'd know it worked
+      description: For retrieval or answer changes, which eval metric should move, and by how much?

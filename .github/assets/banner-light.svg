@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-labelledby="title desc">
+  <title id="title">Footnote</title>
+  <desc id="desc">A page fragment: an answer sentence carries two footnote markers that lead to the exact passages it cites from PEP 8.</desc>
+  <defs>
+    <radialGradient id="lamp" cx="230" cy="-30" r="620" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="page"><rect x="600" y="56" width="616" height="288" rx="4"/></clipPath>
+  </defs>
+  <rect width="1280" height="400" fill="#F5EFE2"/>
+  <rect width="1280" height="400" fill="url(#lamp)"/>
+
+  <!-- Masthead -->
+  <g transform="translate(72 74) scale(0.75)">
+    <rect width="64" height="64" rx="12" fill="#14213F"/>
+    <rect x="2.5" y="2.5" width="59" height="59" rx="10" fill="none" stroke="#8A560C" stroke-opacity="0.45"/>
+    <circle cx="32" cy="12.5" r="3.4" fill="#8A560C"/>
+    <path d="M29.2 16.5h5.6l-1.1 31.8L32 55l-1.7-6.7z" fill="#8A560C"/>
+    <path d="M19.5 22.2c0-1.3 1-2.2 2.3-2.2h20.4c1.3 0 2.3.9 2.3 2.2s-1 2.3-2.3 2.3H21.8c-1.3 0-2.3-1-2.3-2.3z" fill="#EEE6D4"/>
+  </g>
+  <text x="72" y="208" font-family="Georgia, 'Times New Roman', serif" font-size="72" fill="#14213F" textLength="287" lengthAdjust="spacingAndGlyphs">Footnote</text>
+  <text x="364" y="168" font-family="Georgia, 'Times New Roman', serif" font-size="34" fill="#8A560C">†</text>
+  <text x="74" y="256" font-family="Georgia, 'Times New Roman', serif" font-size="27" font-style="italic" fill="#3D4864" textLength="433" lengthAdjust="spacingAndGlyphs">Answers you can check, line by line.</text>
+  <text x="74" y="314" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="12.5" letter-spacing="1.6" fill="#5D6579" textLength="420" lengthAdjust="spacingAndGlyphs">HYBRID RETRIEVAL · NATIVE CITATIONS · MEASURED</text>
+  <text x="74" y="342" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="13" fill="#8A560C" textLength="376" lengthAdjust="spacingAndGlyphs">recall@5 0.868 · MRR 0.701 · 38 golden questions</text>
+
+  <!-- The page -->
+  <rect x="600" y="56" width="616" height="288" rx="4" fill="#FCF9F2" stroke="#D9CEB7"/>
+  <g clip-path="url(#page)" stroke="#EDE5D3" stroke-width="1">
+    <path d="M600 148.5h616M600 190.5h616"/>
+  </g>
+  <text x="632" y="92" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="11" letter-spacing="2" fill="#8A560C">ANSWER</text>
+  <text x="704" y="92" font-family="Georgia, 'Times New Roman', serif" font-size="14" font-style="italic" fill="#5D6579">How long may a line of Python be?</text>
+  <text x="632" y="140" font-family="Georgia, 'Times New Roman', serif" font-size="31" fill="#14213F" textLength="364" lengthAdjust="spacingAndGlyphs">Lines stop at 79 characters</text>
+  <text x="999" y="126" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="15" fill="#8A560C">1</text>
+  <text x="632" y="182" font-family="Georgia, 'Times New Roman', serif" font-size="31" fill="#14213F" textLength="360" lengthAdjust="spacingAndGlyphs">and docstrings wrap at 72.</text>
+  <text x="996" y="168" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="15" fill="#8A560C">2</text>
+
+  <path d="M632 214.5h552" stroke="#E2D8C3"/>
+
+  <rect x="653" y="235" width="0" height="22" rx="1" fill="#F1D28C" fill-opacity="1">
+    <animate attributeName="width" from="0" to="368" begin="0.6s" dur="1.4s" fill="freeze" calcMode="spline" keySplines="0.2 0.7 0.2 1" keyTimes="0;1"/>
+  </rect>
+  <text x="632" y="251" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="13" fill="#8A560C">1</text>
+  <text x="656" y="251" font-family="Georgia, 'Times New Roman', serif" font-size="17" font-style="italic" fill="#14213F" textLength="363" lengthAdjust="spacingAndGlyphs">“Limit all lines to a maximum of 79 characters.”</text>
+  <text x="656" y="276" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="12" fill="#5D6579" textLength="506" lengthAdjust="spacingAndGlyphs">pep-0008.html · Code Lay-out › Maximum Line Length · chars 5,847–5,893</text>
+
+  <text x="632" y="309" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="13" fill="#8A560C">2</text>
+  <text x="656" y="309" font-family="Georgia, 'Times New Roman', serif" font-size="17" font-style="italic" fill="#14213F" textLength="400" lengthAdjust="spacingAndGlyphs">“…the line length should be limited to 72 characters.”</text>
+  <text x="656" y="334" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="12" fill="#5D6579" textLength="506" lengthAdjust="spacingAndGlyphs">pep-0008.html · Code Lay-out › Maximum Line Length · chars 5,988–6,039</text>
+
+  <!-- Leaders from each marker to its note -->
+  <g fill="none" stroke="#8A560C" stroke-width="1.2" stroke-opacity="0.7" stroke-dasharray="2 5" stroke-linecap="round">
+    <path d="M1012 121 C1120 121 1150 200 1032 244">
+      <animate attributeName="stroke-dashoffset" from="0" to="-70" dur="7s" repeatCount="indefinite"/>
+    </path>
+    <path d="M1009 163 C1170 163 1188 286 1068 302">
+      <animate attributeName="stroke-dashoffset" from="0" to="-70" dur="7s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  <circle cx="1032" cy="244" r="2.4" fill="#8A560C"/>
+  <circle cx="1068" cy="302" r="2.4" fill="#8A560C"/>
+</svg>

@@ -1,0 +1,44 @@
+# Dependencies and environments
+node_modules/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Builds and caches
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+.cache/
+
+# Runtime data (databases, downloaded models)
+api/data/
+data/
+web/e2e/.data/
+
+# Test output
+coverage/
+htmlcov/
+.coverage
+web/test-results/
+web/playwright-report/
+
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# CI copies of the eval report
+evals/reports/ci/

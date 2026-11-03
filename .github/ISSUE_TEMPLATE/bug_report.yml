@@ -1,0 +1,42 @@
+name: Bug report
+description: Something in Footnote behaves differently from what the docs say.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you saw instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include the file type and, if you can, a small document that triggers it.
+      placeholder: |
+        1. Upload ...
+        2. Ask ...
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Generation mode
+      description: Shown in the header badge.
+      options:
+        - Retrieval only
+        - Fixture answers
+        - Claude
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: API log output
+      description: The relevant lines from the API's log. Remove any document content you don't want to share.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit

@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PEP 498 – Literal String Interpolation</title>
+<link rel="canonical" href="https://peps.python.org/pep-0498/">
+</head>
+<body>
+<main>
+<section>
+<h1>PEP 498 – Literal String Interpolation</h1>
+<dl>
+<dt>Author:</dt>
+<dd>Eric V. Smith &lt;eric at trueblade.com&gt;</dd>
+<dt>Status:</dt>
+<dd>Final</dd>
+<dt>Type:</dt>
+<dd>Standards Track</dd>
+<dt>Created:</dt>
+<dd>01-Aug-2015</dd>
+<dt>Python-Version:</dt>
+<dd>3.6</dd>
+<dt>Post-History:</dt>
+<dd>07-Aug-2015, 30-Aug-2015, 04-Sep-2015, 19-Sep-2015, 06-Nov-2016</dd>
+<dt>Resolution:</dt>
+<dd><a href="https://mail.python.org/pipermail/python-dev/2015-September/141526.html">Python-Dev message</a></dd>
+</dl>
+
+<section>
+</section>
+<section>
+<h2><a href="#abstract">Abstract</a></h2>
+<p>Python supports multiple ways to format text strings. These include
+%-formatting , <code>str.format()</code> , and <code>string.Template</code>
+. Each of these methods have their advantages, but in addition
+have disadvantages that make them cumbersome to use in practice. This
+PEP proposed to add a new string formatting mechanism: Literal String
+Interpolation. In this PEP, such strings will be referred to as
+“f-strings”, taken from the leading character used to denote such
+strings, and standing for “formatted strings”.</p>
+<p>This PEP does not propose to remove or deprecate any of the existing
+string formatting mechanisms.</p>
+<p>F-strings provide a way to embed expressions inside string literals,
+using a minimal syntax. It should be noted that an f-string is really
+an expression evaluated at run time, not a constant value. In Python
+source code, an f-string is a literal string, prefixed with ‘f’, which
+contains expressions inside braces. The expressions are replaced with
+their values. Some examples are:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; import datetime
+&gt;&gt;&gt; name = 'Fred'
+&gt;&gt;&gt; age = 50
+&gt;&gt;&gt; anniversary = datetime.date(1991, 10, 12)
+&gt;&gt;&gt; f'My name is {name}, my age next year is {age+1}, my anniversary is {anniversary:%A, %B %d, %Y}.'
+'My name is Fred, my age next year is 51, my anniversary is Saturday, October 12, 1991.'
+&gt;&gt;&gt; f'He said his name is {name!r}.'
+"He said his name is 'Fred'."
+</pre></div>
+</div>
+<p>A similar feature was proposed in <a href="../pep-0215/">PEP 215</a>. <a href="../pep-0215/">PEP 215</a> proposed to support
+a subset of Python expressions, and did not support the type-specific
+string formatting (the <code>__format__()</code> method) which was introduced
+with <a href="../pep-3101/">PEP 3101</a>.</p>
+</section>
+<section>
+<h2><a href="#rationale">Rationale</a></h2>
+<p>This PEP is driven by the desire to have a simpler way to format
+strings in Python. The existing ways of formatting are either error
+prone, inflexible, or cumbersome.</p>
+<p>%-formatting is limited as to the types it supports. Only ints, strs,
+and doubles can be formatted. All other types are either not
+supported, or converted to one of these types before formatting. In
+addition, there’s a well-known trap where a single value is passed:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; msg = 'disk failure'
+&gt;&gt;&gt; 'error: %s' % msg
+'error: disk failure'
+</pre></div>
+</div>
+<p>But if msg were ever to be a tuple, the same code would fail:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; msg = ('disk failure', 32)
+&gt;&gt;&gt; 'error: %s' % msg
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+TypeError: not all arguments converted during string formatting
+</pre></div>
+</div>
+<p>To be defensive, the following code should be used:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; 'error: %s' % (msg,)
+"error: ('disk failure', 32)"
+</pre></div>
+</div>
+<p><code>str.format()</code> was added to address some of these problems with
+%-formatting. In particular, it uses normal function call syntax (and
+therefore supports multiple parameters) and it is extensible through
+the <code>__format__()</code> method on the object being converted to a
+string. See <a href="../pep-3101/">PEP 3101</a> for a detailed rationale. This PEP reuses much of
+the <code>str.format()</code> syntax and machinery, in order to provide
+continuity with an existing Python string formatting mechanism.</p>
+<p>However, <code>str.format()</code> is not without its issues. Chief among them
+is its verbosity. For example, the text <code>value</code> is repeated here:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; value = 4 * 20
+&gt;&gt;&gt; 'The value is {value}.'.format(value=value)
+'The value is 80.'
+</pre></div>
+</div>
+<p>Even in its simplest form there is a bit of boilerplate, and the value
+that’s inserted into the placeholder is sometimes far removed from
+where the placeholder is situated:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; 'The value is {}.'.format(value)
+'The value is 80.'
+</pre></div>
+</div>
+<p>With an f-string, this becomes:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; f'The value is {value}.'
+'The value is 80.'
+</pre></div>
+</div>
+<p>F-strings provide a concise, readable way to include the value of
+Python expressions inside strings.</p>
+<p>In this sense, <code>string.Template</code> and %-formatting have similar
+shortcomings to <code>str.format()</code>, but also support fewer formatting
+options. In particular, they do not support the <code>__format__</code>
+protocol, so that there is no way to control how a specific object is
+converted to a string, nor can it be extended to additional types that
+want to control how they are converted to strings (such as <code>Decimal</code>
+and <code>datetime</code>). This example is not possible with
+<code>string.Template</code>:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; value = 1234
+&gt;&gt;&gt; f'input={value:#06x}'
+'input=0x04d2'
+</pre></div>
+</div>
+<p>And neither %-formatting nor <code>string.Template</code> can control
+formatting such as:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; date = datetime.date(1991, 10, 12)
+&gt;&gt;&gt; f'{date} was on a {date:%A}'
+'1991-10-12 was on a Saturday'
+</pre></div>
+</div>
+<section>
+<h3><a href="#no-use-of-globals-or-locals">No use of globals() or locals()</a></h3>
+<p>In the discussions on python-dev , a number of solutions where
+presented that used locals() and globals() or their equivalents. All
+of these have various problems. Among these are referencing variables
+that are not otherwise used in a closure. Consider:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; def outer(x):
+...     def inner():
+...         return 'x={x}'.format_map(locals())
+...     return inner
+...
+&gt;&gt;&gt; outer(42)()
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+  File "&lt;stdin&gt;", line 3, in inner
+KeyError: 'x'
+</pre></div>
+</div>
+<p>This returns an error because the compiler has not added a reference
+to x inside the closure. You need to manually add a reference to x in
+order for this to work:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; def outer(x):
+...     def inner():
+...         x
+...         return 'x={x}'.format_map(locals())
+...     return inner
+...
+&gt;&gt;&gt; outer(42)()
+'x=42'
+</pre></div>
+</div>
+<p>In addition, using locals() or globals() introduces an information
+leak. A called routine that has access to the callers locals() or
+globals() has access to far more information than needed to do the
+string interpolation.</p>
+<p>Guido stated  that any solution to better string interpolation
+would not use locals() or globals() in its implementation.  (This does
+not forbid users from passing locals() or globals() in, it just
+doesn’t require it, nor does it allow using these functions under the
+hood.)</p>
+</section>
+</section>
+<section>
+<h2><a href="#specification">Specification</a></h2>
+<p>In source code, f-strings are string literals that are prefixed by the
+letter ‘f’ or ‘F’. Everywhere this PEP uses ‘f’, ‘F’ may also be
+used. ‘f’ may be combined with ‘r’ or ‘R’, in either order, to produce
+raw f-string literals. ‘f’ may not be combined with ‘b’: this PEP does
+not propose to add binary f-strings. ‘f’ may not be combined with ‘u’.</p>
+<p>When tokenizing source files, f-strings use the same rules as normal
+strings, raw strings, binary strings, and triple quoted strings. That
+is, the string must end with the same character that it started with:
+if it starts with a single quote it must end with a single quote, etc.
+This implies that any code that currently scans Python code looking
+for strings should be trivially modifiable to recognize f-strings
+(parsing within an f-string is another matter, of course).</p>
+<p>Once tokenized, f-strings are parsed in to literal strings and
+expressions.  Expressions appear within curly braces <code>'{'</code> and
+<code>'}'</code>.  While scanning the string for expressions, any doubled
+braces <code>'{{'</code> or <code>'}}'</code> inside literal portions of an f-string are
+replaced by the corresponding single brace.  Doubled literal opening
+braces do not signify the start of an expression.  A single closing
+curly brace <code>'}'</code> in the literal portion of a string is an error:
+literal closing curly braces must be doubled <code>'}}'</code> in order to
+represent a single closing brace.</p>
+<p>The parts of the f-string outside of braces are literal
+strings.  These literal portions are then decoded.  For non-raw
+f-strings, this includes converting backslash escapes such as
+<code>'\n'</code>, <code>'\"'</code>, <code>"\'"</code>, <code>'\xhh'</code>, <code>'\uxxxx'</code>,
+<code>'\Uxxxxxxxx'</code>, and named unicode characters <code>'\N{name}'</code> into
+their associated Unicode characters .</p>
+<p>Backslashes may not appear anywhere within expressions.  Comments,
+using the <code>'#'</code> character, are not allowed inside an expression.</p>
+<p>Following each expression, an optional type conversion may be
+specified.  The allowed conversions are <code>'!s'</code>, <code>'!r'</code>, or
+<code>'!a'</code>. These are treated the same as in <code>str.format()</code>: <code>'!s'</code>
+calls <code>str()</code> on the expression, <code>'!r'</code> calls <code>repr()</code> on the
+expression, and <code>'!a'</code> calls <code>ascii()</code> on the expression. These
+conversions are applied before the call to <code>format()</code>. The only
+reason to use <code>'!s'</code> is if you want to specify a format specifier
+that applies to <code>str</code>, not to the type of the expression.</p>
+<p>F-strings use the same format specifier mini-language as <code>str.format</code>.
+Similar to <code>str.format()</code>, optional format specifiers maybe be
+included inside the f-string, separated from the expression (or the
+type conversion, if specified) by a colon. If a format specifier is
+not provided, an empty string is used.</p>
+<p>So, an f-string looks like:</p>
+<div><div><pre><span></span>f ' &lt;text&gt; { &lt;expression&gt; &lt;optional !s, !r, or !a&gt; &lt;optional : format specifier&gt; } &lt;text&gt; ... '
+</pre></div>
+</div>
+<p>The expression is then formatted using the <code>__format__</code> protocol,
+using the format specifier as an argument. The resulting value is
+used when building the value of the f-string.</p>
+<p>Note that <code>__format__()</code> is not called directly on each value. The
+actual code uses the equivalent of <code>type(value).__format__(value,
+format_spec)</code>, or <code>format(value, format_spec)</code>. See the
+documentation of the builtin <code>format()</code> function for more details.</p>
+<p>Expressions cannot contain <code>':'</code> or <code>'!'</code> outside of strings or
+parentheses, brackets, or braces. The exception is that the <code>'!='</code>
+operator is allowed as a special case.</p>
+<section>
+<h3><a href="#escape-sequences">Escape sequences</a></h3>
+<p>Backslashes may not appear inside the expression portions of
+f-strings, so you cannot use them, for example, to escape quotes
+inside f-strings:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; f'{\'quoted string\'}'
+  File "&lt;stdin&gt;", line 1
+SyntaxError: f-string expression part cannot include a backslash
+</pre></div>
+</div>
+<p>You can use a different type of quote inside the expression:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; f'{"quoted string"}'
+'quoted string'
+</pre></div>
+</div>
+<p>Backslash escapes may appear inside the string portions of an
+f-string.</p>
+<p>Note that the correct way to have a literal brace appear in the
+resulting string value is to double the brace:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; f'{{ {4*10} }}'
+'{ 40 }'
+&gt;&gt;&gt; f'{{{4*10}}}'
+'{40}'
+</pre></div>
+</div>
+<p>Like all raw strings in Python, no escape processing is done for raw
+f-strings:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; fr'x={4*10}\n'
+'x=40\\n'
+</pre></div>
+</div>
+<p>Due to Python’s string tokenizing rules, the f-string
+<code>f'abc {a['x']} def'</code> is invalid. The tokenizer parses this as 3
+tokens: <code>f'abc {a['</code>, <code>x</code>, and <code>']} def'</code>. Just like regular
+strings, this cannot be fixed by using raw strings. There are a number
+of correct ways to write this f-string: with a different quote
+character:</p>
+<div><div><pre><span></span>f"abc {a['x']} def"
+</pre></div>
+</div>
+<p>Or with triple quotes:</p>
+<div><div><pre><span></span>f'''abc {a['x']} def'''
+</pre></div>
+</div>
+</section>
+<section>
+<h3><a href="#code-equivalence">Code equivalence</a></h3>
+<p>The exact code used to implement f-strings is not specified. However,
+it is guaranteed that any embedded value that is converted to a string
+will use that value’s <code>__format__</code> method. This is the same
+mechanism that <code>str.format()</code> uses to convert values to strings.</p>
+<p>For example, this code:</p>
+<div><div><pre><span></span>f'abc{expr1:spec1}{expr2!r:spec2}def{expr3}ghi'
+</pre></div>
+</div>
+<p>Might be evaluated as:</p>
+<div><div><pre><span></span>'abc' + format(expr1, spec1) + format(repr(expr2), spec2) + 'def' + format(expr3) + 'ghi'
+</pre></div>
+</div>
+</section>
+<section>
+<h3><a href="#expression-evaluation">Expression evaluation</a></h3>
+<p>The expressions that are extracted from the string are evaluated in
+the context where the f-string appeared. This means the expression has
+full access to local and global variables. Any valid Python expression
+can be used, including function and method calls.</p>
+<p>Because the f-strings are evaluated where the string appears in the
+source code, there is no additional expressiveness available with
+f-strings. There are also no additional security concerns: you could
+have also just written the same expression, not inside of an
+f-string:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; def foo():
+...   return 20
+...
+&gt;&gt;&gt; f'result={foo()}'
+'result=20'
+</pre></div>
+</div>
+<p>Is equivalent to:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; 'result=' + str(foo())
+'result=20'
+</pre></div>
+</div>
+<p>Expressions are parsed with the equivalent of <code>ast.parse('(' +
+expression + ')', '&lt;fstring&gt;', 'eval')</code> .</p>
+<p>Note that since the expression is enclosed by implicit parentheses
+before evaluation, expressions can contain newlines. For example:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; x = 0
+&gt;&gt;&gt; f'''{x
+... +1}'''
+'1'
+
+&gt;&gt;&gt; d = {0: 'zero'}
+&gt;&gt;&gt; f'''{d[0
+... ]}'''
+'zero'
+</pre></div>
+</div>
+</section>
+<section>
+<h3><a href="#format-specifiers">Format specifiers</a></h3>
+<p>Format specifiers may also contain evaluated expressions. This allows
+code such as:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; width = 10
+&gt;&gt;&gt; precision = 4
+&gt;&gt;&gt; value = decimal.Decimal('12.34567')
+&gt;&gt;&gt; f'result: {value:{width}.{precision}}'
+'result:      12.35'
+</pre></div>
+</div>
+<p>Once expressions in a format specifier are evaluated (if necessary),
+format specifiers are not interpreted by the f-string evaluator. Just
+as in <code>str.format()</code>, they are merely passed in to the
+<code>__format__()</code> method of the object being formatted.</p>
+</section>
+<section>
+<h3><a href="#concatenating-strings">Concatenating strings</a></h3>
+<p>Adjacent f-strings and regular strings are concatenated. Regular
+strings are concatenated at compile time, and f-strings are
+concatenated at run time. For example, the expression:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; x = 10
+&gt;&gt;&gt; y = 'hi'
+&gt;&gt;&gt; 'a' 'b' f'{x}' '{c}' f'str&lt;{y:^4}&gt;' 'd' 'e'
+</pre></div>
+</div>
+<p>yields the value:</p>
+<div><div><pre><span></span>'ab10{c}str&lt; hi &gt;de'
+</pre></div>
+</div>
+<p>While the exact method of this run time concatenation is unspecified,
+the above code might evaluate to:</p>
+<div><div><pre><span></span>'ab' + format(x) + '{c}' + 'str&lt;' + format(y, '^4') + '&gt;de'
+</pre></div>
+</div>
+<p>Each f-string is entirely evaluated before being concatenated to
+adjacent f-strings. That means that this:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; f'{x' f'}'
+</pre></div>
+</div>
+<p>Is a syntax error, because the first f-string does not contain a
+closing brace.</p>
+</section>
+<section>
+<h3><a href="#error-handling">Error handling</a></h3>
+<p>Either compile time or run time errors can occur when processing
+f-strings. Compile time errors are limited to those errors that can be
+detected when scanning an f-string. These errors all raise
+<code>SyntaxError</code>.</p>
+<p>Unmatched braces:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; f'x={x'
+  File "&lt;stdin&gt;", line 1
+SyntaxError: f-string: expecting '}'
+</pre></div>
+</div>
+<p>Invalid expressions:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; f'x={!x}'
+  File "&lt;stdin&gt;", line 1
+SyntaxError: f-string: empty expression not allowed
+</pre></div>
+</div>
+<p>Run time errors occur when evaluating the expressions inside an
+f-string. Note that an f-string can be evaluated multiple times, and
+work sometimes and raise an error at other times:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; d = {0:10, 1:20}
+&gt;&gt;&gt; for i in range(3):
+...     print(f'{i}:{d[i]}')
+...
+0:10
+1:20
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 2, in &lt;module&gt;
+KeyError: 2
+</pre></div>
+</div>
+<p>or:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; for x in (32, 100, 'fifty'):
+...   print(f'x = {x:+3}')
+...
+'x = +32'
+'x = +100'
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 2, in &lt;module&gt;
+ValueError: Sign not allowed in string format specifier
+</pre></div>
+</div>
+</section>
+<section>
+<h3><a href="#leading-and-trailing-whitespace-in-expressions-is-ignored">Leading and trailing whitespace in expressions is ignored</a></h3>
+<p>For ease of readability, leading and trailing whitespace in
+expressions is ignored. This is a by-product of enclosing the
+expression in parentheses before evaluation.</p>
+</section>
+<section>
+<h3><a href="#evaluation-order-of-expressions">Evaluation order of expressions</a></h3>
+<p>The expressions in an f-string are evaluated in left-to-right
+order. This is detectable only if the expressions have side effects:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; def fn(l, incr):
+...    result = l[0]
+...    l[0] += incr
+...    return result
+...
+&gt;&gt;&gt; lst = [0]
+&gt;&gt;&gt; f'{fn(lst,2)} {fn(lst,3)}'
+'0 2'
+&gt;&gt;&gt; f'{fn(lst,2)} {fn(lst,3)}'
+'5 7'
+&gt;&gt;&gt; lst
+[10]
+</pre></div>
+</div>
+</section>
+</section>
+<section>
+<h2><a href="#discussion">Discussion</a></h2>
+<section>
+<h3><a href="#python-ideas-discussion">python-ideas discussion</a></h3>
+<p>Most of the discussions on python-ideas  focused on three issues:</p>
+<ul>
+<li>How to denote f-strings,</li>
+<li>How to specify the location of expressions in f-strings, and</li>
+<li>Whether to allow full Python expressions.</li>
+</ul>
+<section>
+<h4><a href="#how-to-denote-f-strings">How to denote f-strings</a></h4>
+<p>Because the compiler must be involved in evaluating the expressions
+contained in the interpolated strings, there must be some way to
+denote to the compiler which strings should be evaluated. This PEP
+chose a leading <code>'f'</code> character preceding the string literal. This
+is similar to how <code>'b'</code> and <code>'r'</code> prefixes change the meaning of
+the string itself, at compile time. Other prefixes were suggested,
+such as <code>'i'</code>. No option seemed better than the other, so <code>'f'</code>
+was chosen.</p>
+<p>Another option was to support special functions, known to the
+compiler, such as <code>Format()</code>. This seems like too much magic for
+Python: not only is there a chance for collision with existing
+identifiers, the PEP author feels that it’s better to signify the
+magic with a string prefix character.</p>
+</section>
+<section>
+<h4><a href="#how-to-specify-the-location-of-expressions-in-f-strings">How to specify the location of expressions in f-strings</a></h4>
+<p>This PEP supports the same syntax as <code>str.format()</code> for
+distinguishing replacement text inside strings: expressions are
+contained inside braces. There were other options suggested, such as
+<code>string.Template</code>’s <code>$identifier</code> or <code>${expression}</code>.</p>
+<p>While <code>$identifier</code> is no doubt more familiar to shell scripters and
+users of some other languages, in Python <code>str.format()</code> is heavily
+used. A quick search of Python’s standard library shows only a handful
+of uses of <code>string.Template</code>, but hundreds of uses of
+<code>str.format()</code>.</p>
+<p>Another proposed alternative was to have the substituted text between
+<code>\{</code> and <code>}</code> or between <code>\{</code> and <code>\}</code>. While this syntax would
+probably be desirable if all string literals were to support
+interpolation, this PEP only supports strings that are already marked
+with the leading <code>'f'</code>. As such, the PEP is using unadorned braces
+to denoted substituted text, in order to leverage end user familiarity
+with <code>str.format()</code>.</p>
+</section>
+<section>
+<h4><a href="#supporting-full-python-expressions">Supporting full Python expressions</a></h4>
+<p>Many people on the python-ideas discussion wanted support for either
+only single identifiers, or a limited subset of Python expressions
+(such as the subset supported by <code>str.format()</code>). This PEP supports
+full Python expressions inside the braces. Without full expressions,
+some desirable usage would be cumbersome. For example:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; f'Column={col_idx+1}'
+&gt;&gt;&gt; f'number of items: {len(items)}'
+</pre></div>
+</div>
+<p>would become:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; col_number = col_idx+1
+&gt;&gt;&gt; f'Column={col_number}'
+&gt;&gt;&gt; n_items = len(items)
+&gt;&gt;&gt; f'number of items: {n_items}'
+</pre></div>
+</div>
+<p>While it’s true that very ugly expressions could be included in the
+f-strings, this PEP takes the position that such uses should be
+addressed in a linter or code review:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; f'mapping is { {a:b for (a, b) in ((1, 2), (3, 4))} }'
+'mapping is {1: 2, 3: 4}'
+</pre></div>
+</div>
+</section>
+</section>
+<section>
+<h3><a href="#similar-support-in-other-languages">Similar support in other languages</a></h3>
+<p>Wikipedia has a good discussion of string interpolation in other
+programming languages . This feature is implemented in many
+languages, with a variety of syntaxes and restrictions.</p>
+</section>
+<section>
+<h3><a href="#differences-between-f-string-and-str-format-expressions">Differences between f-string and str.format expressions</a></h3>
+<p>There is one small difference between the limited expressions allowed
+in <code>str.format()</code> and the full expressions allowed inside
+f-strings. The difference is in how index lookups are performed. In
+<code>str.format()</code>, index values that do not look like numbers are
+converted to strings:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; d = {'a': 10, 'b': 20}
+&gt;&gt;&gt; 'a={d[a]}'.format(d=d)
+'a=10'
+</pre></div>
+</div>
+<p>Notice that the index value is converted to the string <code>'a'</code> when it
+is looked up in the dict.</p>
+<p>However, in f-strings, you would need to use a literal for the value
+of <code>'a'</code>:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; f'a={d["a"]}'
+'a=10'
+</pre></div>
+</div>
+<p>This difference is required because otherwise you would not be able to
+use variables as index values:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; a = 'b'
+&gt;&gt;&gt; f'a={d[a]}'
+'a=20'
+</pre></div>
+</div>
+<p>See  for a further discussion. It was this observation that led to
+full Python expressions being supported in f-strings.</p>
+<p>Furthermore, the limited expressions that <code>str.format()</code> understands
+need not be valid Python expressions. For example:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; '{i[";]}'.format(i={'";':4})
+'4'
+</pre></div>
+</div>
+<p>For this reason, the str.format() “expression parser” is not suitable
+for use when implementing f-strings.</p>
+</section>
+<section>
+<h3><a href="#triple-quoted-f-strings">Triple-quoted f-strings</a></h3>
+<p>Triple quoted f-strings are allowed. These strings are parsed just as
+normal triple-quoted strings are. After parsing and decoding, the
+normal f-string logic is applied, and <code>__format__()</code> is called on
+each value.</p>
+</section>
+<section>
+<h3><a href="#raw-f-strings">Raw f-strings</a></h3>
+<p>Raw and f-strings may be combined. For example, they could be used to
+build up regular expressions:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; header = 'Subject'
+&gt;&gt;&gt; fr'{header}:\s+'
+'Subject:\\s+'
+</pre></div>
+</div>
+<p>In addition, raw f-strings may be combined with triple-quoted strings.</p>
+</section>
+<section>
+<h3><a href="#no-binary-f-strings">No binary f-strings</a></h3>
+<p>For the same reason that we don’t support <code>bytes.format()</code>, you may
+not combine <code>'f'</code> with <code>'b'</code> string literals. The primary problem
+is that an object’s <code>__format__()</code> method may return Unicode data that
+is not compatible with a bytes string.</p>
+<p>Binary f-strings would first require a solution for
+<code>bytes.format()</code>. This idea has been proposed in the past, most
+recently in <a href="../pep-0461/#proposed-variations">PEP 461</a>. The discussions of such a feature usually
+suggest either</p>
+<ul>
+<li>adding a method such as <code>__bformat__()</code> so an object can control
+how it is converted to bytes, or</li>
+<li>having <code>bytes.format()</code> not be as general purpose or extensible
+as <code>str.format()</code>.</li>
+</ul>
+<p>Both of these remain as options in the future, if such functionality
+is desired.</p>
+</section>
+<section>
+<h3><a href="#s-r-and-a-are-redundant"><code>!s</code>, <code>!r</code>, and <code>!a</code> are redundant</a></h3>
+<p>The <code>!s</code>, <code>!r</code>, and <code>!a</code> conversions are not strictly
+required. Because arbitrary expressions are allowed inside the
+f-strings, this code:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; a = 'some string'
+&gt;&gt;&gt; f'{a!r}'
+"'some string'"
+</pre></div>
+</div>
+<p>Is identical to:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; f'{repr(a)}'
+"'some string'"
+</pre></div>
+</div>
+<p>Similarly, <code>!s</code> can be replaced by calls to <code>str()</code> and <code>!a</code> by
+calls to <code>ascii()</code>.</p>
+<p>However, <code>!s</code>, <code>!r</code>, and <code>!a</code> are supported by this PEP in order
+to minimize the differences with <code>str.format()</code>. <code>!s</code>, <code>!r</code>, and
+<code>!a</code> are required in <code>str.format()</code> because it does not allow the
+execution of arbitrary expressions.</p>
+</section>
+<section>
+<h3><a href="#lambdas-inside-expressions">Lambdas inside expressions</a></h3>
+<p>Because lambdas use the <code>':'</code> character, they cannot appear outside
+of parentheses in an expression. The colon is interpreted as the start
+of the format specifier, which means the start of the lambda
+expression is seen and is syntactically invalid. As there’s no
+practical use for a plain lambda in an f-string expression, this is
+not seen as much of a limitation.</p>
+<p>If you feel you must use lambdas, they may be used inside of parentheses:</p>
+<div><div><pre><span></span>&gt;&gt;&gt; f'{(lambda x: x*2)(3)}'
+'6'
+</pre></div>
+</div>
+</section>
+<section>
+<h3><a href="#can-t-combine-with-u">Can’t combine with ‘u’</a></h3>
+<p>The ‘u’ prefix was added to Python 3.3 in <a href="../pep-0414/">PEP 414</a> as a means to ease
+source compatibility with Python 2.7. Because Python 2.7 will never
+support f-strings, there is nothing to be gained by being able to
+combine the ‘f’ prefix with ‘u’.</p>
+</section>
+</section>
+<section>
+<h2><a href="#examples-from-python-s-source-code">Examples from Python’s source code</a></h2>
+<p>Here are some examples from Python source code that currently use
+<code>str.format()</code>, and how they would look with f-strings. This PEP
+does not recommend wholesale converting to f-strings, these are just
+examples of real-world usages of <code>str.format()</code> and how they’d look
+if written from scratch using f-strings.</p>
+<p><code>Lib/asyncio/locks.py</code>:</p>
+<div><div><pre><span></span>extra = '{},waiters:{}'.format(extra, len(self._waiters))
+extra = f'{extra},waiters:{len(self._waiters)}'
+</pre></div>
+</div>
+<p><code>Lib/configparser.py</code>:</p>
+<div><div><pre><span></span>message.append(" [line {0:2d}]".format(lineno))
+message.append(f" [line {lineno:2d}]")
+</pre></div>
+</div>
+<p><code>Tools/clinic/clinic.py</code>:</p>
+<div><div><pre><span></span>methoddef_name = "{}_METHODDEF".format(c_basename.upper())
+methoddef_name = f"{c_basename.upper()}_METHODDEF"
+</pre></div>
+</div>
+<p><code>python-config.py</code>:</p>
+<div><div><pre><span></span>print("Usage: {0} [{1}]".format(sys.argv[0], '|'.join('--'+opt for opt in valid_opts)), file=sys.stderr)
+print(f"Usage: {sys.argv[0]} [{'|'.join('--'+opt for opt in valid_opts)}]", file=sys.stderr)
+</pre></div>
+</div>
+</section>
+<section>
+<h2><a href="#references">References</a></h2>
+<aside>
+<aside>
+<dt>[<a href="#id1">1</a>]</dt>
+<dd>%-formatting
+(<a href="https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting">https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id2">2</a>]</dt>
+<dd>str.format
+(<a href="https://docs.python.org/3/library/string.html#formatstrings">https://docs.python.org/3/library/string.html#formatstrings</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id3">3</a>]</dt>
+<dd>string.Template documentation
+(<a href="https://docs.python.org/3/library/string.html#template-strings">https://docs.python.org/3/library/string.html#template-strings</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id4">4</a>]</dt>
+<dd>Formatting using locals() and globals()
+(<a href="https://mail.python.org/pipermail/python-ideas/2015-July/034671.html">https://mail.python.org/pipermail/python-ideas/2015-July/034671.html</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id5">5</a>]</dt>
+<dd>Avoid locals() and globals()
+(<a href="https://mail.python.org/pipermail/python-ideas/2015-July/034701.html">https://mail.python.org/pipermail/python-ideas/2015-July/034701.html</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id6">6</a>]</dt>
+<dd>String literal description
+(<a href="https://docs.python.org/3/reference/lexical_analysis.html#string-and-bytes-literals">https://docs.python.org/3/reference/lexical_analysis.html#string-and-bytes-literals</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id7">7</a>]</dt>
+<dd>ast.parse() documentation
+(<a href="https://docs.python.org/3/library/ast.html#ast.parse">https://docs.python.org/3/library/ast.html#ast.parse</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id8">8</a>]</dt>
+<dd>Start of python-ideas discussion
+(<a href="https://mail.python.org/pipermail/python-ideas/2015-July/034657.html">https://mail.python.org/pipermail/python-ideas/2015-July/034657.html</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id9">9</a>]</dt>
+<dd>Wikipedia article on string interpolation
+(<a href="https://en.wikipedia.org/wiki/String_interpolation">https://en.wikipedia.org/wiki/String_interpolation</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id10">10</a>]</dt>
+<dd>Differences in str.format() and f-string expressions
+(<a href="https://mail.python.org/pipermail/python-ideas/2015-July/034726.html">https://mail.python.org/pipermail/python-ideas/2015-July/034726.html</a>)</dd></aside>
+</aside>
+</section>
+<section>
+<h2><a href="#copyright">Copyright</a></h2>
+<p>This document has been placed in the public domain.</p>
+</section>
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,923 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PEP 557 – Data Classes</title>
+<link rel="canonical" href="https://peps.python.org/pep-0557/">
+</head>
+<body>
+<main>
+<section>
+<h1>PEP 557 – Data Classes</h1>
+<dl>
+<dt>Author:</dt>
+<dd>Eric V. Smith &lt;eric at trueblade.com&gt;</dd>
+<dt>Status:</dt>
+<dd>Final</dd>
+<dt>Type:</dt>
+<dd>Standards Track</dd>
+<dt>Created:</dt>
+<dd>02-Jun-2017</dd>
+<dt>Python-Version:</dt>
+<dd>3.7</dd>
+<dt>Post-History:</dt>
+<dd>08-Sep-2017, 25-Nov-2017, 30-Nov-2017, 01-Dec-2017, 02-Dec-2017, 06-Jan-2018, 04-Mar-2018</dd>
+<dt>Resolution:</dt>
+<dd><a href="https://mail.python.org/pipermail/python-dev/2017-December/151034.html">Python-Dev message</a></dd>
+</dl>
+
+<section>
+</section>
+<section>
+<h2><a href="#notice-for-reviewers">Notice for Reviewers</a></h2>
+<p>This PEP and the initial implementation were drafted in a separate
+repo: <a href="https://github.com/ericvsmith/dataclasses">https://github.com/ericvsmith/dataclasses</a>.  Before commenting in
+a public forum please at least read the <a href="#discussion">discussion</a> listed at the
+end of this PEP.</p>
+</section>
+<section>
+<h2><a href="#abstract">Abstract</a></h2>
+<p>This PEP describes an addition to the standard library called Data
+Classes.  Although they use a very different mechanism, Data Classes
+can be thought of as “mutable namedtuples with defaults”.  Because
+Data Classes use normal class definition syntax, you are free to use
+inheritance, metaclasses, docstrings, user-defined methods, class
+factories, and other Python class features.</p>
+<p>A class decorator is provided which inspects a class definition for
+variables with type annotations as defined in <a href="../pep-0526/">PEP 526</a>, “Syntax for
+Variable Annotations”.  In this document, such variables are called
+fields.  Using these fields, the decorator adds generated method
+definitions to the class to support instance initialization, a repr,
+comparison methods, and optionally other methods as described in the
+<a href="#specification">Specification</a> section.  Such a class is called a Data Class, but
+there’s really nothing special about the class: the decorator adds
+generated methods to the class and returns the same class it was
+given.</p>
+<p>As an example:</p>
+<div><div><pre><span></span>@dataclass
+class InventoryItem:
+    '''Class for keeping track of an item in inventory.'''
+    name: str
+    unit_price: float
+    quantity_on_hand: int = 0
+
+    def total_cost(self) -&gt; float:
+        return self.unit_price * self.quantity_on_hand
+</pre></div>
+</div>
+<p>The <code>@dataclass</code> decorator will add the equivalent of these methods
+to the InventoryItem class:</p>
+<div><div><pre><span></span>def __init__(self, name: str, unit_price: float, quantity_on_hand: int = 0) -&gt; None:
+    self.name = name
+    self.unit_price = unit_price
+    self.quantity_on_hand = quantity_on_hand
+def __repr__(self):
+    return f'InventoryItem(name={self.name!r}, unit_price={self.unit_price!r}, quantity_on_hand={self.quantity_on_hand!r})'
+def __eq__(self, other):
+    if other.__class__ is self.__class__:
+        return (self.name, self.unit_price, self.quantity_on_hand) == (other.name, other.unit_price, other.quantity_on_hand)
+    return NotImplemented
+def __ne__(self, other):
+    if other.__class__ is self.__class__:
+        return (self.name, self.unit_price, self.quantity_on_hand) != (other.name, other.unit_price, other.quantity_on_hand)
+    return NotImplemented
+def __lt__(self, other):
+    if other.__class__ is self.__class__:
+        return (self.name, self.unit_price, self.quantity_on_hand) &lt; (other.name, other.unit_price, other.quantity_on_hand)
+    return NotImplemented
+def __le__(self, other):
+    if other.__class__ is self.__class__:
+        return (self.name, self.unit_price, self.quantity_on_hand) &lt;= (other.name, other.unit_price, other.quantity_on_hand)
+    return NotImplemented
+def __gt__(self, other):
+    if other.__class__ is self.__class__:
+        return (self.name, self.unit_price, self.quantity_on_hand) &gt; (other.name, other.unit_price, other.quantity_on_hand)
+    return NotImplemented
+def __ge__(self, other):
+    if other.__class__ is self.__class__:
+        return (self.name, self.unit_price, self.quantity_on_hand) &gt;= (other.name, other.unit_price, other.quantity_on_hand)
+    return NotImplemented
+</pre></div>
+</div>
+<p>Data Classes save you from writing and maintaining these methods.</p>
+</section>
+<section>
+<h2><a href="#rationale">Rationale</a></h2>
+<p>There have been numerous attempts to define classes which exist
+primarily to store values which are accessible by attribute lookup.
+Some examples include:</p>
+<ul>
+<li>collections.namedtuple in the standard library.</li>
+<li>typing.NamedTuple in the standard library.</li>
+<li>The popular attrs  project.</li>
+<li>George Sakkis’ recordType recipe , a mutable data type inspired
+by collections.namedtuple.</li>
+<li>Many example online recipes , packages , and questions .
+David Beazley used a form of data classes as the motivating example
+in a PyCon 2013 metaclass talk .</li>
+</ul>
+<p>So, why is this PEP needed?</p>
+<p>With the addition of <a href="../pep-0526/">PEP 526</a>, Python has a concise way to specify the
+type of class members.  This PEP leverages that syntax to provide a
+simple, unobtrusive way to describe Data Classes.  With two exceptions,
+the specified attribute type annotation is completely ignored by Data
+Classes.</p>
+<p>No base classes or metaclasses are used by Data Classes.  Users of
+these classes are free to use inheritance and metaclasses without any
+interference from Data Classes.  The decorated classes are truly
+“normal” Python classes.  The Data Class decorator should not
+interfere with any usage of the class.</p>
+<p>One main design goal of Data Classes is to support static type
+checkers.  The use of <a href="../pep-0526/">PEP 526</a> syntax is one example of this, but so is
+the design of the <code>fields()</code> function and the <code>@dataclass</code>
+decorator.  Due to their very dynamic nature, some of the libraries
+mentioned above are difficult to use with static type checkers.</p>
+<p>Data Classes are not, and are not intended to be, a replacement
+mechanism for all of the above libraries.  But being in the standard
+library will allow many of the simpler use cases to instead leverage
+Data Classes.  Many of the libraries listed have different feature
+sets, and will of course continue to exist and prosper.</p>
+<p>Where is it not appropriate to use Data Classes?</p>
+<ul>
+<li>API compatibility with tuples or dicts is required.</li>
+<li>Type validation beyond that provided by PEPs 484 and 526 is
+required, or value validation or conversion is required.</li>
+</ul>
+</section>
+<section>
+<h2><a href="#specification">Specification</a></h2>
+<p>All of the functions described in this PEP will live in a module named
+<code>dataclasses</code>.</p>
+<p>A function <code>dataclass</code> which is typically used as a class decorator
+is provided to post-process classes and add generated methods,
+described below.</p>
+<p>The <code>dataclass</code> decorator examines the class to find <code>field</code>s.  A
+<code>field</code> is defined as any variable identified in
+<code>__annotations__</code>.  That is, a variable that has a type annotation.
+With two exceptions described below, none of the Data Class machinery
+examines the type specified in the annotation.</p>
+<p>Note that <code>__annotations__</code> is guaranteed to be an ordered mapping,
+in class declaration order.  The order of the fields in all of the
+generated methods is the order in which they appear in the class.</p>
+<p>The <code>dataclass</code> decorator will add various “dunder” methods to the
+class, described below.  If any of the added methods already exist on the
+class, a <code>TypeError</code> will be raised.  The decorator returns the same
+class that is called on: no new class is created.</p>
+<p>The <code>dataclass</code> decorator is typically used with no parameters and
+no parentheses.  However, it also supports the following logical
+signature:</p>
+<div><div><pre><span></span>def dataclass(*, init=True, repr=True, eq=True, order=False, unsafe_hash=False, frozen=False)
+</pre></div>
+</div>
+<p>If <code>dataclass</code> is used just as a simple decorator with no
+parameters, it acts as if it has the default values documented in this
+signature.  That is, these three uses of <code>@dataclass</code> are equivalent:</p>
+<div><div><pre><span></span>@dataclass
+class C:
+    ...
+
+@dataclass()
+class C:
+    ...
+
+@dataclass(init=True, repr=True, eq=True, order=False, unsafe_hash=False, frozen=False)
+class C:
+    ...
+</pre></div>
+</div>
+<p>The parameters to <code>dataclass</code> are:</p>
+<ul>
+<li><code>init</code>: If true (the default), a <code>__init__</code> method will be
+generated.</li>
+<li><code>repr</code>: If true (the default), a <code>__repr__</code> method will be
+generated.  The generated repr string will have the class name and
+the name and repr of each field, in the order they are defined in
+the class.  Fields that are marked as being excluded from the repr
+are not included.  For example:
+<code>InventoryItem(name='widget', unit_price=3.0, quantity_on_hand=10)</code>.<p>If the class already defines <code>__repr__</code>, this parameter is
+ignored.</p>
+</li>
+<li><code>eq</code>: If true (the default), an <code>__eq__</code> method will be
+generated.  This method compares the class as if it were a tuple of its
+fields, in order.  Both instances in the comparison must be of the
+identical type.<p>If the class already defines <code>__eq__</code>, this parameter is ignored.</p>
+</li>
+<li><code>order</code>: If true (the default is False), <code>__lt__</code>, <code>__le__</code>,
+<code>__gt__</code>, and <code>__ge__</code> methods will be generated.  These compare
+the class as if it were a tuple of its fields, in order.  Both
+instances in the comparison must be of the identical type.  If
+<code>order</code> is true and <code>eq</code> is false, a <code>ValueError</code> is raised.<p>If the class already defines any of <code>__lt__</code>, <code>__le__</code>,
+<code>__gt__</code>, or <code>__ge__</code>, then <code>ValueError</code> is raised.</p>
+</li>
+<li><code>unsafe_hash</code>: If <code>False</code> (the default), the <code>__hash__</code> method
+is generated according to how <code>eq</code> and <code>frozen</code> are set.<p>If <code>eq</code> and <code>frozen</code> are both true, Data Classes will generate a
+<code>__hash__</code> method for you.  If <code>eq</code> is true and <code>frozen</code> is
+false, <code>__hash__</code> will be set to <code>None</code>, marking it unhashable
+(which it is).  If <code>eq</code> is false, <code>__hash__</code> will be left
+untouched meaning the <code>__hash__</code> method of the superclass will be
+used (if the superclass is <code>object</code>, this means it will fall back
+to id-based hashing).</p>
+<p>Although not recommended, you can force Data Classes to create a
+<code>__hash__</code> method with <code>unsafe_hash=True</code>. This might be the
+case if your class is logically immutable but can nonetheless be
+mutated. This is a specialized use case and should be considered
+carefully.</p>
+<p>If a class already has an explicitly defined <code>__hash__</code> the
+behavior when adding <code>__hash__</code> is modified.  An explicitly
+defined <code>__hash__</code> is defined when:</p>
+<blockquote>
+<div><ul>
+<li><code>__eq__</code> is defined in the class and <code>__hash__</code> is defined
+with any value other than <code>None</code>.</li>
+<li><code>__eq__</code> is defined in the class and any non-<code>None</code>
+<code>__hash__</code> is defined.</li>
+<li><code>__eq__</code> is not defined on the class, and any <code>__hash__</code> is
+defined.</li>
+</ul>
+</div></blockquote>
+<p>If <code>unsafe_hash</code> is true and an explicitly defined <code>__hash__</code>
+is present, then <code>ValueError</code> is raised.</p>
+<p>If <code>unsafe_hash</code> is false and an explicitly defined <code>__hash__</code>
+is present, then no <code>__hash__</code> is added.</p>
+<p>See the Python documentation  for more information.</p>
+</li>
+<li><code>frozen</code>: If true (the default is False), assigning to fields will
+generate an exception.  This emulates read-only frozen instances.
+If either <code>__getattr__</code> or <code>__setattr__</code> is defined in the
+class, then <code>ValueError</code> is raised.  See the discussion below.</li>
+</ul>
+<p><code>field</code>s may optionally specify a default value, using normal
+Python syntax:</p>
+<div><div><pre><span></span>@dataclass
+class C:
+    a: int       # 'a' has no default value
+    b: int = 0   # assign a default value for 'b'
+</pre></div>
+</div>
+<p>In this example, both <code>a</code> and <code>b</code> will be included in the added
+<code>__init__</code> method, which will be defined as:</p>
+<div><div><pre><span></span>def __init__(self, a: int, b: int = 0):
+</pre></div>
+</div>
+<p><code>TypeError</code> will be raised if a field without a default value
+follows a field with a default value.  This is true either when this
+occurs in a single class, or as a result of class inheritance.</p>
+<p>For common and simple use cases, no other functionality is required.
+There are, however, some Data Class features that require additional
+per-field information.  To satisfy this need for additional
+information, you can replace the default field value with a call to
+the provided <code>field()</code> function.  The signature of <code>field()</code> is:</p>
+<div><div><pre><span></span>def field(*, default=MISSING, default_factory=MISSING, repr=True,
+          hash=None, init=True, compare=True, metadata=None)
+</pre></div>
+</div>
+<p>The <code>MISSING</code> value is a sentinel object used to detect if the
+<code>default</code> and <code>default_factory</code> parameters are provided.  This
+sentinel is used because <code>None</code> is a valid value for <code>default</code>.</p>
+<p>The parameters to <code>field()</code> are:</p>
+<ul>
+<li><code>default</code>: If provided, this will be the default value for this
+field.  This is needed because the <code>field</code> call itself replaces
+the normal position of the default value.</li>
+<li><code>default_factory</code>: If provided, it must be a zero-argument
+callable that will be called when a default value is needed for this
+field.  Among other purposes, this can be used to specify fields
+with mutable default values, as discussed below.  It is an error to
+specify both <code>default</code> and <code>default_factory</code>.</li>
+<li><code>init</code>: If true (the default), this field is included as a
+parameter to the generated <code>__init__</code> method.</li>
+<li><code>repr</code>: If true (the default), this field is included in the
+string returned by the generated <code>__repr__</code> method.</li>
+<li><code>compare</code>: If True (the default), this field is included in the
+generated equality and comparison methods (<code>__eq__</code>, <code>__gt__</code>,
+et al.).</li>
+<li><code>hash</code>: This can be a bool or <code>None</code>.  If True, this field is
+included in the generated <code>__hash__</code> method.  If <code>None</code> (the
+default), use the value of <code>compare</code>: this would normally be the
+expected behavior.  A field should be considered in the hash if
+it’s used for comparisons.  Setting this value to anything other
+than <code>None</code> is discouraged.<p>One possible reason to set <code>hash=False</code> but <code>compare=True</code> would
+be if a field is expensive to compute a hash value for, that field
+is needed for equality testing, and there are other fields that
+contribute to the type’s hash value.  Even if a field is excluded
+from the hash, it will still be used for comparisons.</p>
+</li>
+<li><code>metadata</code>: This can be a mapping or None. None is treated as an
+empty dict.  This value is wrapped in <code>types.MappingProxyType</code> to
+make it read-only, and exposed on the Field object. It is not used
+at all by Data Classes, and is provided as a third-party extension
+mechanism.  Multiple third-parties can each have their own key, to
+use as a namespace in the metadata.</li>
+</ul>
+<p>If the default value of a field is specified by a call to <code>field()</code>,
+then the class attribute for this field will be replaced by the
+specified <code>default</code> value.  If no <code>default</code> is provided, then the
+class attribute will be deleted.  The intent is that after the
+<code>dataclass</code> decorator runs, the class attributes will all contain
+the default values for the fields, just as if the default value itself
+were specified.  For example, after:</p>
+<div><div><pre><span></span>@dataclass
+class C:
+    x: int
+    y: int = field(repr=False)
+    z: int = field(repr=False, default=10)
+    t: int = 20
+</pre></div>
+</div>
+<p>The class attribute <code>C.z</code> will be <code>10</code>, the class attribute
+<code>C.t</code> will be <code>20</code>, and the class attributes <code>C.x</code> and <code>C.y</code>
+will not be set.</p>
+<section>
+<h3><a href="#field-objects"><code>Field</code> objects</a></h3>
+<p><code>Field</code> objects describe each defined field. These objects are
+created internally, and are returned by the <code>fields()</code> module-level
+method (see below).  Users should never instantiate a <code>Field</code>
+object directly.  Its documented attributes are:</p>
+<ul>
+<li><code>name</code>: The name of the field.</li>
+<li><code>type</code>: The type of the field.</li>
+<li><code>default</code>, <code>default_factory</code>, <code>init</code>, <code>repr</code>, <code>hash</code>,
+<code>compare</code>, and <code>metadata</code> have the identical meaning and values
+as they do in the <code>field()</code> declaration.</li>
+</ul>
+<p>Other attributes may exist, but they are private and must not be
+inspected or relied on.</p>
+</section>
+<section>
+<h3><a href="#post-init-processing">post-init processing</a></h3>
+<p>The generated <code>__init__</code> code will call a method named
+<code>__post_init__</code>, if it is defined on the class.  It will be called
+as <code>self.__post_init__()</code>.  If no <code>__init__</code> method is generated,
+then <code>__post_init__</code> will not automatically be called.</p>
+<p>Among other uses, this allows for initializing field values that
+depend on one or more other fields.  For example:</p>
+<div><div><pre><span></span>@dataclass
+class C:
+    a: float
+    b: float
+    c: float = field(init=False)
+
+    def __post_init__(self):
+        self.c = self.a + self.b
+</pre></div>
+</div>
+<p>See the section below on init-only variables for ways to pass
+parameters to <code>__post_init__()</code>.  Also see the warning about how
+<code>replace()</code> handles <code>init=False</code> fields.</p>
+</section>
+<section>
+<h3><a href="#class-variables">Class variables</a></h3>
+<p>One place where <code>dataclass</code> actually inspects the type of a field is
+to determine if a field is a class variable as defined in <a href="../pep-0526/">PEP 526</a>.  It
+does this by checking if the type of the field is <code>typing.ClassVar</code>.
+If a field is a <code>ClassVar</code>, it is excluded from consideration as a
+field and is ignored by the Data Class mechanisms. For more
+discussion, see .  Such <code>ClassVar</code> pseudo-fields are not
+returned by the module-level <code>fields()</code> function.</p>
+</section>
+<section>
+<h3><a href="#init-only-variables">Init-only variables</a></h3>
+<p>The other place where <code>dataclass</code> inspects a type annotation is to
+determine if a field is an init-only variable.  It does this by seeing
+if the type of a field is of type <code>dataclasses.InitVar</code>.  If a field
+is an <code>InitVar</code>, it is considered a pseudo-field called an init-only
+field.  As it is not a true field, it is not returned by the
+module-level <code>fields()</code> function.  Init-only fields are added as
+parameters to the generated <code>__init__</code> method, and are passed to
+the optional <code>__post_init__</code> method.  They are not otherwise used
+by Data Classes.</p>
+<p>For example, suppose a field will be initialized from a database, if a
+value is not provided when creating the class:</p>
+<div><div><pre><span></span>@dataclass
+class C:
+    i: int
+    j: int = None
+    database: InitVar[DatabaseType] = None
+
+    def __post_init__(self, database):
+        if self.j is None and database is not None:
+            self.j = database.lookup('j')
+
+c = C(10, database=my_database)
+</pre></div>
+</div>
+<p>In this case, <code>fields()</code> will return <code>Field</code> objects for <code>i</code> and
+<code>j</code>, but not for <code>database</code>.</p>
+</section>
+<section>
+<h3><a href="#frozen-instances">Frozen instances</a></h3>
+<p>It is not possible to create truly immutable Python objects.  However,
+by passing <code>frozen=True</code> to the <code>@dataclass</code> decorator you can
+emulate immutability.  In that case, Data Classes will add
+<code>__setattr__</code> and <code>__delattr__</code> methods to the class.  These
+methods will raise a <code>FrozenInstanceError</code> when invoked.</p>
+<p>There is a tiny performance penalty when using <code>frozen=True</code>:
+<code>__init__</code> cannot use simple assignment to initialize fields, and
+must use <code>object.__setattr__</code>.</p>
+</section>
+<section>
+<h3><a href="#inheritance">Inheritance</a></h3>
+<p>When the Data Class is being created by the <code>@dataclass</code> decorator,
+it looks through all of the class’s base classes in reverse MRO (that
+is, starting at <code>object</code>) and, for each Data Class that it finds,
+adds the fields from that base class to an ordered mapping of fields.
+After all of the base class fields are added, it adds its own fields
+to the ordered mapping.  All of the generated methods will use this
+combined, calculated ordered mapping of fields.  Because the fields
+are in insertion order, derived classes override base classes.  An
+example:</p>
+<div><div><pre><span></span>@dataclass
+class Base:
+    x: Any = 15.0
+    y: int = 0
+
+@dataclass
+class C(Base):
+    z: int = 10
+    x: int = 15
+</pre></div>
+</div>
+<p>The final list of fields is, in order, <code>x</code>, <code>y</code>, <code>z</code>.  The final
+type of <code>x</code> is <code>int</code>, as specified in class <code>C</code>.</p>
+<p>The generated <code>__init__</code> method for <code>C</code> will look like:</p>
+<div><div><pre><span></span>def __init__(self, x: int = 15, y: int = 0, z: int = 10):
+</pre></div>
+</div>
+</section>
+<section>
+<h3><a href="#default-factory-functions">Default factory functions</a></h3>
+<p>If a field specifies a <code>default_factory</code>, it is called with zero
+arguments when a default value for the field is needed.  For example,
+to create a new instance of a list, use:</p>
+<div><div><pre><span></span>l: list = field(default_factory=list)
+</pre></div>
+</div>
+<p>If a field is excluded from <code>__init__</code> (using <code>init=False</code>) and
+the field also specifies <code>default_factory</code>, then the default factory
+function will always be called from the generated <code>__init__</code>
+function.  This happens because there is no other way to give the
+field an initial value.</p>
+</section>
+<section>
+<h3><a href="#mutable-default-values">Mutable default values</a></h3>
+<p>Python stores default member variable values in class attributes.
+Consider this example, not using Data Classes:</p>
+<div><div><pre><span></span>class C:
+    x = []
+    def add(self, element):
+        self.x += element
+
+o1 = C()
+o2 = C()
+o1.add(1)
+o2.add(2)
+assert o1.x == [1, 2]
+assert o1.x is o2.x
+</pre></div>
+</div>
+<p>Note that the two instances of class <code>C</code> share the same class
+variable <code>x</code>, as expected.</p>
+<p>Using Data Classes, <em>if</em> this code was valid:</p>
+<div><div><pre><span></span>@dataclass
+class D:
+    x: List = []
+    def add(self, element):
+        self.x += element
+</pre></div>
+</div>
+<p>it would generate code similar to:</p>
+<div><div><pre><span></span>class D:
+    x = []
+    def __init__(self, x=x):
+        self.x = x
+    def add(self, element):
+        self.x += element
+
+assert D().x is D().x
+</pre></div>
+</div>
+<p>This has the same issue as the original example using class <code>C</code>.
+That is, two instances of class <code>D</code> that do not specify a value for
+<code>x</code> when creating a class instance will share the same copy of
+<code>x</code>.  Because Data Classes just use normal Python class creation
+they also share this problem.  There is no general way for Data
+Classes to detect this condition.  Instead, Data Classes will raise a
+<code>TypeError</code> if it detects a default parameter of type <code>list</code>,
+<code>dict</code>, or <code>set</code>.  This is a partial solution, but it does protect
+against many common errors.  See <a href="#automatically-support-mutable-default-values">Automatically support mutable
+default values</a> in the Rejected Ideas section for more details.</p>
+<p>Using default factory functions is a way to create new instances of
+mutable types as default values for fields:</p>
+<div><div><pre><span></span>@dataclass
+class D:
+    x: list = field(default_factory=list)
+
+assert D().x is not D().x
+</pre></div>
+</div>
+</section>
+<section>
+<h3><a href="#module-level-helper-functions">Module level helper functions</a></h3>
+<ul>
+<li><code>fields(class_or_instance)</code>: Returns a tuple of <code>Field</code> objects
+that define the fields for this Data Class.  Accepts either a Data
+Class, or an instance of a Data Class.  Raises <code>ValueError</code> if not
+passed a Data Class or instance of one.  Does not return
+pseudo-fields which are <code>ClassVar</code> or <code>InitVar</code>.</li>
+<li><code>asdict(instance, *, dict_factory=dict)</code>: Converts the Data Class
+<code>instance</code> to a dict (by using the factory function
+<code>dict_factory</code>).  Each Data Class is converted to a dict of its
+fields, as name:value pairs.  Data Classes, dicts, lists, and tuples
+are recursed into.  For example:<div><div><pre><span></span>@dataclass
+class Point:
+     x: int
+     y: int
+
+@dataclass
+class C:
+     l: List[Point]
+
+p = Point(10, 20)
+assert asdict(p) == {'x': 10, 'y': 20}
+
+c = C([Point(0, 0), Point(10, 4)])
+assert asdict(c) == {'l': [{'x': 0, 'y': 0}, {'x': 10, 'y': 4}]}
+</pre></div>
+</div>
+<p>Raises <code>TypeError</code> if <code>instance</code> is not a Data Class instance.</p>
+</li>
+<li><code>astuple(*, tuple_factory=tuple)</code>: Converts the Data Class
+<code>instance</code> to a tuple (by using the factory function
+<code>tuple_factory</code>).  Each Data Class is converted to a tuple of its
+field values.  Data Classes, dicts, lists, and tuples are recursed
+into.<p>Continuing from the previous example:</p>
+<div><div><pre><span></span>assert astuple(p) == (10, 20)
+assert astuple(c) == ([(0, 0), (10, 4)],)
+</pre></div>
+</div>
+<p>Raises <code>TypeError</code> if <code>instance</code> is not a Data Class instance.</p>
+</li>
+<li><code>make_dataclass(cls_name, fields, *, bases=(), namespace=None)</code>:
+Creates a new Data Class with name <code>cls_name</code>, fields as defined
+in <code>fields</code>, base classes as given in <code>bases</code>, and initialized
+with a namespace as given in <code>namespace</code>.  <code>fields</code> is an
+iterable whose elements are either <code>name</code>, <code>(name, type)</code>, or
+<code>(name, type, Field)</code>.  If just <code>name</code> is supplied,
+<code>typing.Any</code> is used for <code>type</code>.  This function is not strictly
+required, because any Python mechanism for creating a new class with
+<code>__annotations__</code> can then apply the <code>dataclass</code> function to
+convert that class to a Data Class.  This function is provided as a
+convenience.  For example:<div><div><pre><span></span>C = make_dataclass('C',
+                   [('x', int),
+                     'y',
+                    ('z', int, field(default=5))],
+                   namespace={'add_one': lambda self: self.x + 1})
+</pre></div>
+</div>
+<p>Is equivalent to:</p>
+<div><div><pre><span></span>@dataclass
+class C:
+    x: int
+    y: 'typing.Any'
+    z: int = 5
+
+    def add_one(self):
+        return self.x + 1
+</pre></div>
+</div>
+</li>
+<li><code>replace(instance, **changes)</code>: Creates a new object of the same
+type of <code>instance</code>, replacing fields with values from <code>changes</code>.
+If <code>instance</code> is not a Data Class, raises <code>TypeError</code>.  If
+values in <code>changes</code> do not specify fields, raises <code>TypeError</code>.<p>The newly returned object is created by calling the <code>__init__</code>
+method of the Data Class.  This ensures that
+<code>__post_init__</code>, if present, is also called.</p>
+<p>Init-only variables without default values, if any exist, must be
+specified on the call to <code>replace</code> so that they can be passed to
+<code>__init__</code> and <code>__post_init__</code>.</p>
+<p>It is an error for <code>changes</code> to contain any fields that are
+defined as having <code>init=False</code>.  A <code>ValueError</code> will be raised
+in this case.</p>
+<p>Be forewarned about how <code>init=False</code> fields work during a call to
+<code>replace()</code>.  They are not copied from the source object, but
+rather are initialized in <code>__post_init__()</code>, if they’re
+initialized at all.  It is expected that <code>init=False</code> fields will
+be rarely and judiciously used.  If they are used, it might be wise
+to have alternate class constructors, or perhaps a custom
+<code>replace()</code> (or similarly named) method which handles instance
+copying.</p>
+</li>
+<li><code>is_dataclass(class_or_instance)</code>: Returns True if its parameter
+is a dataclass or an instance of one, otherwise returns False.<p>If you need to know if a class is an instance of a dataclass (and
+not a dataclass itself), then add a further check for <code>not
+isinstance(obj, type)</code>:</p>
+<div><div><pre><span></span>def is_dataclass_instance(obj):
+    return is_dataclass(obj) and not isinstance(obj, type)
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+</section>
+<section>
+<h2><a href="#discussion">Discussion</a></h2>
+<section>
+<h3><a href="#python-ideas-discussion">python-ideas discussion</a></h3>
+<p>This discussion started on python-ideas  and was moved to a GitHub
+repo  for further discussion.  As part of this discussion, we made
+the decision to use <a href="../pep-0526/">PEP 526</a> syntax to drive the discovery of fields.</p>
+</section>
+<section>
+<h3><a href="#support-for-automatically-setting-slots">Support for automatically setting <code>__slots__</code>?</a></h3>
+<p>At least for the initial release, <code>__slots__</code> will not be supported.
+<code>__slots__</code> needs to be added at class creation time.  The Data
+Class decorator is called after the class is created, so in order to
+add <code>__slots__</code> the decorator would have to create a new class, set
+<code>__slots__</code>, and return it.  Because this behavior is somewhat
+surprising, the initial version of Data Classes will not support
+automatically setting <code>__slots__</code>.  There are a number of
+workarounds:</p>
+<ul>
+<li>Manually add <code>__slots__</code> in the class definition.</li>
+<li>Write a function (which could be used as a decorator) that inspects
+the class using <code>fields()</code> and creates a new class with
+<code>__slots__</code> set.</li>
+</ul>
+<p>For more discussion, see .</p>
+</section>
+<section>
+<h3><a href="#why-not-just-use-namedtuple">Why not just use namedtuple?</a></h3>
+<ul>
+<li>Any namedtuple can be accidentally compared to any other with the
+same number of fields. For example: <code>Point3D(2017, 6, 2) ==
+Date(2017, 6, 2)</code>.  With Data Classes, this would return False.</li>
+<li>A namedtuple can be accidentally compared to a tuple.  For example,
+<code>Point2D(1, 10) == (1, 10)</code>.  With Data Classes, this would return
+False.</li>
+<li>Instances are always iterable, which can make it difficult to add
+fields.  If a library defines:<div><div><pre><span></span>Time = namedtuple('Time', ['hour', 'minute'])
+def get_time():
+    return Time(12, 0)
+</pre></div>
+</div>
+<p>Then if a user uses this code as:</p>
+<div><div><pre><span></span>hour, minute = get_time()
+</pre></div>
+</div>
+<p>then it would not be possible to add a <code>second</code> field to <code>Time</code>
+without breaking the user’s code.</p>
+</li>
+<li>No option for mutable instances.</li>
+<li>Cannot specify default values.</li>
+<li>Cannot control which fields are used for <code>__init__</code>, <code>__repr__</code>,
+etc.</li>
+<li>Cannot support combining fields by inheritance.</li>
+</ul>
+</section>
+<section>
+<h3><a href="#why-not-just-use-typing-namedtuple">Why not just use typing.NamedTuple?</a></h3>
+<p>For classes with statically defined fields, it does support similar
+syntax to Data Classes, using type annotations.  This produces a
+namedtuple, so it shares <code>namedtuple</code>s benefits and some of its
+downsides.  Data Classes, unlike <code>typing.NamedTuple</code>, support
+combining fields via inheritance.</p>
+</section>
+<section>
+<h3><a href="#why-not-just-use-attrs">Why not just use attrs?</a></h3>
+<ul>
+<li>attrs moves faster than could be accommodated if it were moved in to
+the standard library.</li>
+<li>attrs supports additional features not being proposed here:
+validators, converters, metadata, etc.  Data Classes makes a
+tradeoff to achieve simplicity by not implementing these
+features.</li>
+</ul>
+<p>For more discussion, see .</p>
+</section>
+<section>
+<h3><a href="#post-init-parameters">post-init parameters</a></h3>
+<p>In an earlier version of this PEP before <code>InitVar</code> was added, the
+post-init function <code>__post_init__</code> never took any parameters.</p>
+<p>The normal way of doing parameterized initialization (and not just
+with Data Classes) is to provide an alternate classmethod constructor.
+For example:</p>
+<div><div><pre><span></span>@dataclass
+class C:
+    x: int
+
+    @classmethod
+    def from_file(cls, filename):
+        with open(filename) as fl:
+            file_value = int(fl.read())
+        return C(file_value)
+
+c = C.from_file('file.txt')
+</pre></div>
+</div>
+<p>Because the <code>__post_init__</code> function is the last thing called in the
+generated <code>__init__</code>, having a classmethod constructor (which can
+also execute code immediately after constructing the object) is
+functionally equivalent to being able to pass parameters to a
+<code>__post_init__</code> function.</p>
+<p>With <code>InitVar</code>s, <code>__post_init__</code> functions can now take
+parameters.  They are passed first to <code>__init__</code> which passes them
+to <code>__post_init__</code> where user code can use them as needed.</p>
+<p>The only real difference between alternate classmethod constructors
+and <code>InitVar</code> pseudo-fields is in regards to required non-field
+parameters during object creation.  With <code>InitVar</code>s, using
+<code>__init__</code> and the module-level <code>replace()</code> function <code>InitVar</code>s
+must always be specified.  Consider the case where a <code>context</code>
+object is needed to create an instance, but isn’t stored as a field.
+With alternate classmethod constructors the <code>context</code> parameter is
+always optional, because you could still create the object by going
+through <code>__init__</code> (unless you suppress its creation).  Which
+approach is more appropriate will be application-specific, but both
+approaches are supported.</p>
+<p>Another reason for using <code>InitVar</code> fields is that the class author
+can control the order of <code>__init__</code> parameters.  This is especially
+important with regular fields and <code>InitVar</code> fields that have default
+values, as all fields with defaults must come after all fields without
+defaults.  A previous design had all init-only fields coming after
+regular fields.  This meant that if any field had a default value,
+then all init-only fields would have to have defaults values, too.</p>
+</section>
+<section>
+<h3><a href="#asdict-and-astuple-function-names">asdict and astuple function names</a></h3>
+<p>The names of the module-level helper functions <code>asdict()</code> and
+<code>astuple()</code> are arguably not <a href="../pep-0008/">PEP 8</a> compliant, and should be
+<code>as_dict()</code> and <code>as_tuple()</code>, respectively.  However, after
+discussion  it was decided to keep consistency with
+<code>namedtuple._asdict()</code> and <code>attr.asdict()</code>.</p>
+</section>
+</section>
+<section>
+<h2><a href="#rejected-ideas">Rejected ideas</a></h2>
+<section>
+<h3><a href="#copying-init-false-fields-after-new-object-creation-in-replace">Copying <code>init=False</code> fields after new object creation in replace()</a></h3>
+<p>Fields that are <code>init=False</code> are by definition not passed to
+<code>__init__</code>, but instead are initialized with a default value, or by
+calling a default factory function in <code>__init__</code>, or by code in
+<code>__post_init__</code>.</p>
+<p>A previous version of this PEP specified that <code>init=False</code> fields
+would be copied from the source object to the newly created object
+after <code>__init__</code> returned, but that was deemed to be inconsistent
+with using <code>__init__</code> and <code>__post_init__</code> to initialize the new
+object.  For example, consider this case:</p>
+<div><div><pre><span></span>@dataclass
+class Square:
+    length: float
+    area: float = field(init=False, default=0.0)
+
+    def __post_init__(self):
+        self.area = self.length * self.length
+
+s1 = Square(1.0)
+s2 = replace(s1, length=2.0)
+</pre></div>
+</div>
+<p>If <code>init=False</code> fields were copied from the source to the
+destination object after <code>__post_init__</code> is run, then s2 would end
+up begin <code>Square(length=2.0, area=1.0)</code>, instead of the correct
+<code>Square(length=2.0, area=4.0)</code>.</p>
+</section>
+<section>
+<h3><a href="#automatically-support-mutable-default-values">Automatically support mutable default values</a></h3>
+<p>One proposal was to automatically copy defaults, so that if a literal
+list <code>[]</code> was a default value, each instance would get a new list.
+There were undesirable side effects of this decision, so the final
+decision is to disallow the 3 known built-in mutable types: list,
+dict, and set.  For a complete discussion of this and other options,
+see .</p>
+</section>
+</section>
+<section>
+<h2><a href="#examples">Examples</a></h2>
+<section>
+<h3><a href="#custom-init-method">Custom __init__ method</a></h3>
+<p>Sometimes the generated <code>__init__</code> method does not suffice. For
+example, suppose you wanted to have an object to store <code>*args</code> and
+<code>**kwargs</code>:</p>
+<div><div><pre><span></span>@dataclass(init=False)
+class ArgHolder:
+    args: List[Any]
+    kwargs: Mapping[Any, Any]
+
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+a = ArgHolder(1, 2, three=3)
+</pre></div>
+</div>
+</section>
+<section>
+<h3><a href="#a-complicated-example">A complicated example</a></h3>
+<p>This code exists in a closed source project:</p>
+<div><div><pre><span></span>class Application:
+    def __init__(self, name, requirements, constraints=None, path='', executable_links=None, executables_dir=()):
+        self.name = name
+        self.requirements = requirements
+        self.constraints = {} if constraints is None else constraints
+        self.path = path
+        self.executable_links = [] if executable_links is None else executable_links
+        self.executables_dir = executables_dir
+        self.additional_items = []
+
+    def __repr__(self):
+        return f'Application({self.name!r},{self.requirements!r},{self.constraints!r},{self.path!r},{self.executable_links!r},{self.executables_dir!r},{self.additional_items!r})'
+</pre></div>
+</div>
+<p>This can be replaced by:</p>
+<div><div><pre><span></span>@dataclass
+class Application:
+    name: str
+    requirements: List[Requirement]
+    constraints: Dict[str, str] = field(default_factory=dict)
+    path: str = ''
+    executable_links: List[str] = field(default_factory=list)
+    executable_dir: Tuple[str] = ()
+    additional_items: List[str] = field(init=False, default_factory=list)
+</pre></div>
+</div>
+<p>The Data Class version is more declarative, has less code, supports
+<code>typing</code>, and includes the other generated functions.</p>
+</section>
+</section>
+<section>
+<h2><a href="#acknowledgements">Acknowledgements</a></h2>
+<p>The following people provided invaluable input during the development
+of this PEP and code: Ivan Levkivskyi, Guido van Rossum, Hynek
+Schlawack, Raymond Hettinger, and Lisa Roach.  I thank them for their
+time and expertise.</p>
+<p>A special mention must be made about the <code>attrs</code> project.  It was a
+true inspiration for this PEP, and I respect the design decisions they
+made.</p>
+</section>
+<section>
+<h2><a href="#references">References</a></h2>
+<aside>
+<aside>
+<dt>[<a href="#id1">1</a>]</dt>
+<dd>attrs project on github
+(<a href="https://github.com/python-attrs/attrs">https://github.com/python-attrs/attrs</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id2">2</a>]</dt>
+<dd>George Sakkis’ recordType recipe
+(<a href="http://code.activestate.com/recipes/576555-records/">http://code.activestate.com/recipes/576555-records/</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id3">3</a>]</dt>
+<dd>DictDotLookup recipe
+(<a href="http://code.activestate.com/recipes/576586-dot-style-nested-lookups-over-dictionary-based-dat/">http://code.activestate.com/recipes/576586-dot-style-nested-lookups-over-dictionary-based-dat/</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id4">4</a>]</dt>
+<dd>attrdict package
+(<a href="https://pypi.python.org/pypi/attrdict">https://pypi.python.org/pypi/attrdict</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id5">5</a>]</dt>
+<dd>StackOverflow question about data container classes
+(<a href="https://stackoverflow.com/questions/3357581/using-python-class-as-a-data-container">https://stackoverflow.com/questions/3357581/using-python-class-as-a-data-container</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id6">6</a>]</dt>
+<dd>David Beazley metaclass talk featuring data classes
+(<a href="https://www.youtube.com/watch?v=sPiWg5jSoZI">https://www.youtube.com/watch?v=sPiWg5jSoZI</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id7">7</a>]</dt>
+<dd>Python documentation for __hash__
+(<a href="https://docs.python.org/3/reference/datamodel.html#object.__hash__">https://docs.python.org/3/reference/datamodel.html#object.__hash__</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id8">8</a>]</dt>
+<dd><a href="../pep-0526/#class-and-instance-variable-annotations">ClassVar discussion in PEP 526</a></dd></aside>
+<aside>
+<dt>[<a href="#id9">9</a>]</dt>
+<dd>Start of python-ideas discussion
+(<a href="https://mail.python.org/pipermail/python-ideas/2017-May/045618.html">https://mail.python.org/pipermail/python-ideas/2017-May/045618.html</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id10">10</a>]</dt>
+<dd>GitHub repo where discussions and initial development took place
+(<a href="https://github.com/ericvsmith/dataclasses">https://github.com/ericvsmith/dataclasses</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id11">11</a>]</dt>
+<dd>Support __slots__?
+(<a href="https://github.com/ericvsmith/dataclasses/issues/28">https://github.com/ericvsmith/dataclasses/issues/28</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id12">12</a>]</dt>
+<dd>why not just attrs?
+(<a href="https://github.com/ericvsmith/dataclasses/issues/19">https://github.com/ericvsmith/dataclasses/issues/19</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id13">13</a>]</dt>
+<dd><a href="../pep-0008/">PEP 8</a> names for asdict and astuple
+(<a href="https://github.com/ericvsmith/dataclasses/issues/110">https://github.com/ericvsmith/dataclasses/issues/110</a>)</dd></aside>
+<aside>
+<dt>[<a href="#id14">14</a>]</dt>
+<dd>Copying mutable defaults
+(<a href="https://github.com/ericvsmith/dataclasses/issues/3">https://github.com/ericvsmith/dataclasses/issues/3</a>)</dd></aside>
+</aside>
+</section>
+<section>
+<h2><a href="#copyright">Copyright</a></h2>
+<p>This document has been placed in the public domain.</p>
+</section>
+</section>
+</main>
+</body>
+</html>

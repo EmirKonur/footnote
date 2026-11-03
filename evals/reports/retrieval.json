@@ -1,0 +1,2759 @@
+{
+  "generated_at": "2026-11-03T16:00:49+00:00",
+  "machine": "Darwin arm64, Python 3.12.4",
+  "corpus": {
+    "documents": 15,
+    "chunks": 782,
+    "ingest_seconds": 39.5
+  },
+  "golden": {
+    "answerable_questions": 38,
+    "path": "evals/golden.jsonl"
+  },
+  "settings": {
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "candidate_pool": 50,
+    "rrf_k": 60,
+    "chunking": {
+      "target_chars": 900,
+      "max_chars": 1400,
+      "overlap_chars": 220
+    }
+  },
+  "variants": {
+    "bm25": "SQLite FTS5 BM25 only",
+    "dense": "bge-small-en-v1.5 cosine only",
+    "hybrid": "BM25 + dense, reciprocal rank fusion (k=60)",
+    "dense-no-instruction": "dense without the BGE query prefix",
+    "hybrid-no-instruction": "hybrid without the BGE query prefix"
+  },
+  "modes": {
+    "bm25": {
+      "recall@1": 0.5263,
+      "recall@3": 0.6053,
+      "recall@5": 0.6842,
+      "recall@10": 0.7895,
+      "mrr@10": 0.5872,
+      "ndcg@5": 0.5614,
+      "ndcg@10": 0.5931,
+      "latency_ms_p50": 0.6,
+      "latency_ms_p95": 1.05
+    },
+    "dense": {
+      "recall@1": 0.5,
+      "recall@3": 0.7105,
+      "recall@5": 0.8684,
+      "recall@10": 0.9474,
+      "mrr@10": 0.6387,
+      "ndcg@5": 0.6303,
+      "ndcg@10": 0.6563,
+      "latency_ms_p50": 5.19,
+      "latency_ms_p95": 7.42
+    },
+    "hybrid": {
+      "recall@1": 0.5789,
+      "recall@3": 0.7895,
+      "recall@5": 0.8684,
+      "recall@10": 0.9474,
+      "mrr@10": 0.7011,
+      "ndcg@5": 0.6798,
+      "ndcg@10": 0.7033,
+      "latency_ms_p50": 6.21,
+      "latency_ms_p95": 10.87
+    },
+    "dense-no-instruction": {
+      "recall@1": 0.5263,
+      "recall@3": 0.6579,
+      "recall@5": 0.8421,
+      "recall@10": 0.9474,
+      "mrr@10": 0.6398,
+      "ndcg@5": 0.6216,
+      "ndcg@10": 0.6559,
+      "latency_ms_p50": 4.49,
+      "latency_ms_p95": 9.89
+    },
+    "hybrid-no-instruction": {
+      "recall@1": 0.5526,
+      "recall@3": 0.7895,
+      "recall@5": 0.8684,
+      "recall@10": 0.9211,
+      "mrr@10": 0.6869,
+      "ndcg@5": 0.6713,
+      "ndcg@10": 0.6875,
+      "latency_ms_p50": 4.89,
+      "latency_ms_p95": 6.17
+    }
+  },
+  "per_question": {
+    "bm25": [
+      {
+        "id": "pep8-line-length",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.125,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.31546487678572877,
+        "first_hit": 8
+      },
+      {
+        "id": "pep8-docstring-width",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-team-limit",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-indent-width",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-tabs",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-none-comparison",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.2,
+        "ndcg@5": 0.38685280723454163,
+        "ndcg@10": 0.38685280723454163,
+        "first_hit": 5
+      },
+      {
+        "id": "pep8-function-names",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-import-order",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-blank-lines",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep20-count",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep20-easter-egg",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.3333333333333333,
+        "ndcg@5": 0.5,
+        "ndcg@10": 0.5,
+        "first_hit": 3
+      },
+      {
+        "id": "pep257-quotes",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep257-one-line",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep1-acronym",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep1-kinds",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep343-purpose",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep343-protocol",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep405-marker",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep405-create",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep484-stub-extension",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep484-any",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.1111111111111111,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.3010299956639812,
+        "first_hit": 9
+      },
+      {
+        "id": "pep492-await-outside",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep492-async-cm",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep492-yield",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep498-backslash",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep498-conversions",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep557-frozen",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.1,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.2890648263178879,
+        "first_hit": 10
+      },
+      {
+        "id": "pep557-mutable-default",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep572-walrus",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep572-statement",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.3333333333333333,
+        "ndcg@5": 0.5,
+        "ndcg@10": 0.5,
+        "first_hit": 3
+      },
+      {
+        "id": "pep621-table",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.25,
+        "ndcg@5": 0.43067655807339306,
+        "ndcg@10": 0.43067655807339306,
+        "first_hit": 4
+      },
+      {
+        "id": "pep621-dynamic",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep634-underscore",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.1111111111111111,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.3010299956639812,
+        "first_hit": 9
+      },
+      {
+        "id": "pep634-irrefutable",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.25,
+        "ndcg@5": 0.43067655807339306,
+        "ndcg@10": 0.43067655807339306,
+        "first_hit": 4
+      },
+      {
+        "id": "pep668-marker",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep668-override",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep703-build-flag",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep703-brc",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      }
+    ],
+    "dense": [
+      {
+        "id": "pep8-line-length",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep8-docstring-width",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-team-limit",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-indent-width",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep8-tabs",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-none-comparison",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.2,
+        "ndcg@5": 0.38685280723454163,
+        "ndcg@10": 0.38685280723454163,
+        "first_hit": 5
+      },
+      {
+        "id": "pep8-function-names",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-import-order",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-blank-lines",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep20-count",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep20-easter-egg",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep257-quotes",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.25,
+        "ndcg@5": 0.43067655807339306,
+        "ndcg@10": 0.43067655807339306,
+        "first_hit": 4
+      },
+      {
+        "id": "pep257-one-line",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep1-acronym",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep1-kinds",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.3903800499921017,
+        "ndcg@10": 0.3903800499921017,
+        "first_hit": 1
+      },
+      {
+        "id": "pep343-purpose",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.2,
+        "ndcg@5": 0.38685280723454163,
+        "ndcg@10": 0.38685280723454163,
+        "first_hit": 5
+      },
+      {
+        "id": "pep343-protocol",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep405-marker",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.3333333333333333,
+        "ndcg@5": 0.5,
+        "ndcg@10": 0.5,
+        "first_hit": 3
+      },
+      {
+        "id": "pep405-create",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep484-stub-extension",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep484-any",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep492-await-outside",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.3333333333333333,
+        "ndcg@5": 0.5,
+        "ndcg@10": 0.5,
+        "first_hit": 3
+      },
+      {
+        "id": "pep492-async-cm",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep492-yield",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.3333333333333333,
+        "ndcg@5": 0.5,
+        "ndcg@10": 0.5,
+        "first_hit": 3
+      },
+      {
+        "id": "pep498-backslash",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep498-conversions",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep557-frozen",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.25,
+        "ndcg@5": 0.43067655807339306,
+        "ndcg@10": 0.43067655807339306,
+        "first_hit": 4
+      },
+      {
+        "id": "pep557-mutable-default",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.16666666666666666,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.3562071871080222,
+        "first_hit": 6
+      },
+      {
+        "id": "pep572-walrus",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep572-statement",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.2,
+        "ndcg@5": 0.38685280723454163,
+        "ndcg@10": 0.38685280723454163,
+        "first_hit": 5
+      },
+      {
+        "id": "pep621-table",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep621-dynamic",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep634-underscore",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep634-irrefutable",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.25,
+        "ndcg@5": 0.43067655807339306,
+        "ndcg@10": 0.43067655807339306,
+        "first_hit": 4
+      },
+      {
+        "id": "pep668-marker",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.1111111111111111,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.3010299956639812,
+        "first_hit": 9
+      },
+      {
+        "id": "pep668-override",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.14285714285714285,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.3333333333333333,
+        "first_hit": 7
+      },
+      {
+        "id": "pep703-build-flag",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep703-brc",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      }
+    ],
+    "hybrid": [
+      {
+        "id": "pep8-line-length",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.3333333333333333,
+        "ndcg@5": 0.5,
+        "ndcg@10": 0.5,
+        "first_hit": 3
+      },
+      {
+        "id": "pep8-docstring-width",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-team-limit",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-indent-width",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-tabs",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-none-comparison",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep8-function-names",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-import-order",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-blank-lines",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep20-count",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep20-easter-egg",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep257-quotes",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep257-one-line",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep1-acronym",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.2,
+        "ndcg@5": 0.38685280723454163,
+        "ndcg@10": 0.38685280723454163,
+        "first_hit": 5
+      },
+      {
+        "id": "pep1-kinds",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.3903800499921017,
+        "ndcg@10": 0.3903800499921017,
+        "first_hit": 1
+      },
+      {
+        "id": "pep343-purpose",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep343-protocol",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep405-marker",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep405-create",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep484-stub-extension",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep484-any",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.125,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.31546487678572877,
+        "first_hit": 8
+      },
+      {
+        "id": "pep492-await-outside",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.3333333333333333,
+        "ndcg@5": 0.5,
+        "ndcg@10": 0.5,
+        "first_hit": 3
+      },
+      {
+        "id": "pep492-async-cm",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep492-yield",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep498-backslash",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep498-conversions",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep557-frozen",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.2,
+        "ndcg@5": 0.38685280723454163,
+        "ndcg@10": 0.38685280723454163,
+        "first_hit": 5
+      },
+      {
+        "id": "pep557-mutable-default",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.1,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.2890648263178879,
+        "first_hit": 10
+      },
+      {
+        "id": "pep572-walrus",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep572-statement",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep621-table",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep621-dynamic",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep634-underscore",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep634-irrefutable",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.25,
+        "ndcg@5": 0.43067655807339306,
+        "ndcg@10": 0.43067655807339306,
+        "first_hit": 4
+      },
+      {
+        "id": "pep668-marker",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.1,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.2890648263178879,
+        "first_hit": 10
+      },
+      {
+        "id": "pep668-override",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep703-build-flag",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep703-brc",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      }
+    ],
+    "dense-no-instruction": [
+      {
+        "id": "pep8-line-length",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep8-docstring-width",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-team-limit",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-indent-width",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-tabs",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-none-comparison",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.2,
+        "ndcg@5": 0.38685280723454163,
+        "ndcg@10": 0.38685280723454163,
+        "first_hit": 5
+      },
+      {
+        "id": "pep8-function-names",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-import-order",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-blank-lines",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep20-count",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep20-easter-egg",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep257-quotes",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.25,
+        "ndcg@5": 0.43067655807339306,
+        "ndcg@10": 0.43067655807339306,
+        "first_hit": 4
+      },
+      {
+        "id": "pep257-one-line",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep1-acronym",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep1-kinds",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.3903800499921017,
+        "ndcg@10": 0.3903800499921017,
+        "first_hit": 1
+      },
+      {
+        "id": "pep343-purpose",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.25,
+        "ndcg@5": 0.43067655807339306,
+        "ndcg@10": 0.43067655807339306,
+        "first_hit": 4
+      },
+      {
+        "id": "pep343-protocol",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep405-marker",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.2,
+        "ndcg@5": 0.38685280723454163,
+        "ndcg@10": 0.38685280723454163,
+        "first_hit": 5
+      },
+      {
+        "id": "pep405-create",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep484-stub-extension",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.2,
+        "ndcg@5": 0.38685280723454163,
+        "ndcg@10": 0.38685280723454163,
+        "first_hit": 5
+      },
+      {
+        "id": "pep484-any",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep492-await-outside",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.3333333333333333,
+        "ndcg@5": 0.5,
+        "ndcg@10": 0.5,
+        "first_hit": 3
+      },
+      {
+        "id": "pep492-async-cm",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep492-yield",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep498-backslash",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep498-conversions",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep557-frozen",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep557-mutable-default",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.14285714285714285,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.3333333333333333,
+        "first_hit": 7
+      },
+      {
+        "id": "pep572-walrus",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep572-statement",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.1111111111111111,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.3010299956639812,
+        "first_hit": 9
+      },
+      {
+        "id": "pep621-table",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep621-dynamic",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep634-underscore",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.3333333333333333,
+        "ndcg@5": 0.5,
+        "ndcg@10": 0.5,
+        "first_hit": 3
+      },
+      {
+        "id": "pep634-irrefutable",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.25,
+        "ndcg@5": 0.43067655807339306,
+        "ndcg@10": 0.43067655807339306,
+        "first_hit": 4
+      },
+      {
+        "id": "pep668-marker",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.16666666666666666,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.3562071871080222,
+        "first_hit": 6
+      },
+      {
+        "id": "pep668-override",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.125,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.31546487678572877,
+        "first_hit": 8
+      },
+      {
+        "id": "pep703-build-flag",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.25,
+        "ndcg@5": 0.43067655807339306,
+        "ndcg@10": 0.43067655807339306,
+        "first_hit": 4
+      },
+      {
+        "id": "pep703-brc",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      }
+    ],
+    "hybrid-no-instruction": [
+      {
+        "id": "pep8-line-length",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.3333333333333333,
+        "ndcg@5": 0.5,
+        "ndcg@10": 0.5,
+        "first_hit": 3
+      },
+      {
+        "id": "pep8-docstring-width",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-team-limit",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-indent-width",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-tabs",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-none-comparison",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep8-function-names",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-import-order",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep8-blank-lines",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep20-count",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep20-easter-egg",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep257-quotes",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep257-one-line",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep1-acronym",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.25,
+        "ndcg@5": 0.43067655807339306,
+        "ndcg@10": 0.43067655807339306,
+        "first_hit": 4
+      },
+      {
+        "id": "pep1-kinds",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.3903800499921017,
+        "ndcg@10": 0.3903800499921017,
+        "first_hit": 1
+      },
+      {
+        "id": "pep343-purpose",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep343-protocol",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep405-marker",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep405-create",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep484-stub-extension",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep484-any",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.125,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.31546487678572877,
+        "first_hit": 8
+      },
+      {
+        "id": "pep492-await-outside",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.3333333333333333,
+        "ndcg@5": 0.5,
+        "ndcg@10": 0.5,
+        "first_hit": 3
+      },
+      {
+        "id": "pep492-async-cm",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep492-yield",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep498-backslash",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep498-conversions",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep557-frozen",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.2,
+        "ndcg@5": 0.38685280723454163,
+        "ndcg@10": 0.38685280723454163,
+        "first_hit": 5
+      },
+      {
+        "id": "pep557-mutable-default",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.0,
+        "first_hit": null
+      },
+      {
+        "id": "pep572-walrus",
+        "tags": [
+          "multi-passage"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 0.6131471927654584,
+        "ndcg@10": 0.6131471927654584,
+        "first_hit": 1
+      },
+      {
+        "id": "pep572-statement",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep621-table",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep621-dynamic",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      },
+      {
+        "id": "pep634-underscore",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep634-irrefutable",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.25,
+        "ndcg@5": 0.43067655807339306,
+        "ndcg@10": 0.43067655807339306,
+        "first_hit": 4
+      },
+      {
+        "id": "pep668-marker",
+        "tags": [
+          "paraphrase"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.1111111111111111,
+        "ndcg@5": 0.0,
+        "ndcg@10": 0.3010299956639812,
+        "first_hit": 9
+      },
+      {
+        "id": "pep668-override",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep703-build-flag",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@5": 0.6309297535714575,
+        "ndcg@10": 0.6309297535714575,
+        "first_hit": 2
+      },
+      {
+        "id": "pep703-brc",
+        "tags": [
+          "lookup"
+        ],
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@5": 1.0,
+        "ndcg@10": 1.0,
+        "first_hit": 1
+      }
+    ]
+  }
+}
