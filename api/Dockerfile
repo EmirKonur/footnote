@@ -1,5 +1,5 @@
 # Build context: the repository root (the image also carries the bundled eval corpus).
-FROM python:3.12-slim
+FROM python:3.15-slim
 
 COPY --from=ghcr.io/astral-sh/uv:0.9.27 /uv /usr/local/bin/uv
 ENV UV_COMPILE_BYTECODE=1 \
